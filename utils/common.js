@@ -358,8 +358,9 @@ export async function renderUrl (e, url, renderCfg = {}) {
       width: 1280,
       height: 720
     })
-    let buff = base64 = await page.screenshot({ fullPage: true })
-    base64 = segment.image(buff)
+    let buff = await page.screenshot({ fullPage: true });
+    let buffer = Buffer.from(buff).toString('base64');
+    base64 = segment.image(`base64://${buffer}`);
     await page.close().catch((err) => logger.error(err))
   } catch (error) {
     logger.error(`${url}图片生成失败:${error}`)
