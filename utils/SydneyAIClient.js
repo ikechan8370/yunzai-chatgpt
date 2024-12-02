@@ -95,27 +95,27 @@ export default class SydneyAIClient {
         fetchOptions.headers.cookie = this.opts.cookies
       }
       // let hash = md5(this.opts.cookies || this.opts.userToken)
-      let hash = crypto.createHash('md5').update(this.opts.cookies || this.opts.userToken).digest('hex')
-      let proTag = await redis.get('CHATGPT:COPILOT_PRO_TAG:' + hash)
-      if (!proTag) {
-        let indexContentRes = await fetch('https://www.bing.com/chat', {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0',
-            Cookie: `_U=${this.opts.userToken}`
-          }
-        })
-        let indexContent = await indexContentRes.text()
-        if (indexContent?.includes('b_proTag')) {
-          proTag = 'true'
-        } else {
-          proTag = 'false'
-        }
-        await redis.set('CHATGPT:COPILOT_PRO_TAG:' + hash, proTag, { EX: 7200 })
-      }
-      if (proTag === 'true') {
-        logger.info('当前账户为copilot pro用户')
-        this.pro = true
-      }
+      // let hash = crypto.createHash('md5').update(this.opts.cookies || this.opts.userToken).digest('hex')
+      // let proTag = await redis.get('CHATGPT:COPILOT_PRO_TAG:' + hash)
+      // if (!proTag) {
+      //   let indexContentRes = await fetch('https://www.bing.com/chat', {
+      //     headers: {
+      //       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0',
+      //       Cookie: `_U=${this.opts.userToken}`
+      //     }
+      //   })
+      //   let indexContent = await indexContentRes.text()
+      //   if (indexContent?.includes('b_proTag')) {
+      //     proTag = 'true'
+      //   } else {
+      //     proTag = 'false'
+      //   }
+      //   await redis.set('CHATGPT:COPILOT_PRO_TAG:' + hash, proTag, { EX: 7200 })
+      // }
+      // if (proTag === 'true') {
+      //   logger.info('当前账户为copilot pro用户')
+      //   this.pro = true
+      // }
     } else {
       fetchOptions.headers.cookie = initCk
     }
