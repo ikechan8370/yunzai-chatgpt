@@ -470,13 +470,19 @@ export async function convertFaces (msg, handleAt = false, e) {
   let groupCardQQMap = {}
   if (handleAt) {
     try {
-      groupMembers = e.bot.gml
+      groupMembers = e.bot.gml.get(e.group_id)
     } catch (err) {
       console.error(`Failed to get group members: ${err}`)
     }
     if (groupMembers) {
       for (let key of groupMembers.keys()) {
-        groupCardQQMap[groupMembers.get(key).card || groupMembers.get(key).nickname] = groupMembers.get(key).user_id
+        let userInfo = groupMembers.get(key)
+        if (userInfo.card) {
+          groupCardQQMap[userInfo.card] = userInfo.user_id
+        }
+        if (userInfo.nickname) {
+          groupCardQQMap[userInfo.nickname] = userInfo.user_id
+        }
       }
     }
   }

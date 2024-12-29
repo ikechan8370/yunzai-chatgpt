@@ -80,7 +80,8 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
    *     temperature: number?,
    *     topP: number?,
    *     tokK: number?,
-   *     replyPureTextCallback: Function
+   *     replyPureTextCallback: Function,
+   *     toolMode: 'AUTO' | 'ANY' | 'NONE'
    * }} opt
    * @returns {Promise<{conversationId: string?, parentMessageId: string, text: string, id: string}>}
    */
@@ -173,9 +174,17 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
         }
       ]
       // ANY要笑死人的效果
+      let mode = opt.toolMode || 'AUTO'
+      let lastFuncName = opt.functionResponse?.name
+      const mustSendNextTurn = [
+        'searchImage', 'searchMusic', 'searchVideo'
+      ]
+      if (lastFuncName && mustSendNextTurn.includes(lastFuncName)) {
+        mode = 'ANY'
+      }
       body.tool_config = {
         function_calling_config: {
-          mode: 'AUTO'
+          mode
         }
       }
     }
@@ -215,6 +224,7 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
       const text = responseContent.parts.find(i => i.text)?.text
       if (text) {
         // send reply first
+        logger.info('send message: ' + text)
         opt.replyPureTextCallback && await opt.replyPureTextCallback(text)
       }
       // Gemini有时候只回复一个空的functionCall,无语死了
