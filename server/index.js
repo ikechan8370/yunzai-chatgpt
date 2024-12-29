@@ -399,7 +399,7 @@ export async function createServer () {
                   quotable: {
                     user_id: _Bot.uin,
                     user_name: _Bot.nickname
-                  },
+                  }
                 }
                 await connection.socket.send(JSON.stringify(messageData))
               }
@@ -412,12 +412,12 @@ export async function createServer () {
                 user_id: item,
                 nickname: friend.nickname,
                 group: {
-                  isGroup: false,
+                  isGroup: false
                 },
                 quotable: {
                   user_id: _Bot.uin,
                   user_name: _Bot.nickname
-                },
+                }
               }
               await connection.socket.send(JSON.stringify(messageData))
             })
@@ -443,43 +443,47 @@ export async function createServer () {
     return request
   }
   Bot.on('message', e => {
-    e.message = e.message.map(item => {
-      if (item.type === 'at') {
-        let user
-        try {
-          user = e.group.pickMember(parseInt(item.qq)).card || e.group.pickMember(parseInt(item.qq)).nickname
-        } catch (error) {
-          user = item.qq
+    try {
+      e.message = e.message.map(item => {
+        if (item.type === 'at') {
+          let user
+          try {
+            user = e.group.pickMember(parseInt(item.qq)).card || e.group.pickMember(parseInt(item.qq)).nickname
+          } catch (error) {
+            user = item.qq
+          }
+          return { ...item, text: user }
         }
-        return { ...item, text: user }
-      }
-      return item
-    })
-    const messageData = {
-      notice: 'clientMessage',
-      message: e.message,
-      sender: e.sender,
-      group: {
-        isGroup: e.isGroup || e.group_id != undefined,
-        group_id: e.group_id,
-        group_name: e.group_name || e.bot.gl?.get(e.group_id)?.group_name || e.group_id
-      },
-      quotable: {
-        user_id: e.user_id,
-        time: e.time,
-        seq: e.seq,
-        rand: e.rand,
+        return item
+      })
+      const messageData = {
+        notice: 'clientMessage',
         message: e.message,
-        user_name: e.sender.card || e.sender.nickname
-      }
-    }
-    if (clients) {
-      for (const index in clients) {
-        const user = GetUser(index)
-        if (user.autho == 'admin' || user.user == e.user_id) {
-          clients[index].send(JSON.stringify(messageData))
+        sender: e.sender,
+        group: {
+          isGroup: e.isGroup || e.group_id != undefined,
+          group_id: e.group_id,
+          group_name: e.group_name || e.bot.gl?.get(e.group_id)?.group_name || e.group_id
+        },
+        quotable: {
+          user_id: e.user_id,
+          time: e.time,
+          seq: e.seq,
+          rand: e.rand,
+          message: e.message,
+          user_name: e.sender.card || e.sender.nickname
         }
       }
+      if (clients) {
+        for (const index in clients) {
+          const user = GetUser(index)
+          if (user.autho == 'admin' || user.user == e.user_id) {
+            clients[index].send(JSON.stringify(messageData))
+          }
+        }
+      }
+    } catch (error) {
+      logger.debug(error)
     }
   })
   server.get('/ws', {
