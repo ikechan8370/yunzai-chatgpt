@@ -15,6 +15,11 @@
       },
       {
         "type": "check",
+        "label": "开启伪人模式",
+        "data": "enableBYM"
+      },
+      {
+        "type": "check",
         "label": "调试信息",
         "data": "debug"
       },
@@ -421,6 +426,33 @@
                 "label": "语音转换API地址",
                 "placeholder": "voicevox语音转换API地址",
                 "data": "voicevoxSpace"
+              }
+            ]
+          },
+          {
+            "title": "伪人（bym）模式",
+            "icon": "mdi-format-text",
+            "tab": "text",
+            "view": [
+              {
+                "type": "number",
+                "label": "伪人模式触发概率，单位为%",
+                "data": "bymRate"
+              },
+              {
+                "type": "text",
+                "label": "伪人模式的额外预设",
+                "data": "bymPreset"
+              },
+              {
+                "type": "text",
+                "label": "伪人模式骂人反击的设定词",
+                "data": "bymFuckPrompt"
+              },
+              {
+                "type": "check",
+                "label": "伪人骂人反击后是否撤回",
+                "data": "bymFuckRecall"
               }
             ]
           }

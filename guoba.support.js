@@ -46,6 +46,18 @@ export function supportGuoba () {
           component: 'Switch'
         },
         {
+          field: 'assistantLabel',
+          label: 'AI名字',
+          bottomHelpMessage: 'AI认为的自己的名字，当你问他你是谁是他会回答这里的名字',
+          component: 'Input'
+        },
+        {
+          field: 'enableBYM',
+          label: '开启伪人模式',
+          bottomHelpMessage: '开启后，将在群内随机发言，伪装成人。取消机器人前缀体验最佳。目前仅支持gemini，会使用gemini的配置。发言包括AI名字会必定触发回复。暂不支持分群管理，可在不同群禁用或启动“ChatGPT-Plugin 伪人bym”功能',
+          component: 'Switch'
+        },
+        {
           field: 'proxy',
           label: '代理服务器地址',
           bottomHelpMessage: '数据通过代理服务器发送，http或socks5代理。配置后需重启',
@@ -156,12 +168,6 @@ export function supportGuoba () {
           label: 'AI风格',
           bottomHelpMessage: '你可以在这里写入你希望AI回答的风格，比如希望优先回答中文，回答长一点等',
           component: 'InputTextArea'
-        },
-        {
-          field: 'assistantLabel',
-          label: 'AI名字',
-          bottomHelpMessage: 'AI认为的自己的名字，当你问他你是谁是他会回答这里的名字',
-          component: 'Input'
         },
         {
           field: 'temperature',
@@ -971,6 +977,25 @@ export function supportGuoba () {
         {
           field: 'emojiBaseURL',
           label: '合成emoji的API地址，默认谷歌厨房',
+          component: 'Input'
+        },
+        {
+          field: 'bymRate',
+          label: '伪人模式触发概率，单位为%',
+          component: 'InputNumber',
+          componentProps: {
+            min: 0,
+            max: 100
+          }
+        },
+        {
+          field: 'bymPreset',
+          label: '伪人模式的额外预设',
+          component: 'Input'
+        },
+        {
+          field: 'bymFuckPrompt',
+          label: '伪人模式骂人反击的设定词',
           component: 'Input'
         },
         {
