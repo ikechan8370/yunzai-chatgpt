@@ -13,7 +13,13 @@ export async function getChatHistoryGroup (e, num) {
       let chats = []
       while (chats.length < num) {
         let chatHistory = await e.group.getChatHistory(seq, 20)
+        if (!chatHistory || chatHistory.length === 0) {
+          break
+        }
         chats.push(...chatHistory)
+        if (seq === chatHistory[0].seq || seq === chatHistory[0].message_id) {
+          break
+        }
         seq = chatHistory[0].seq || chatHistory[0].message_id
       }
       chats = chats.slice(0, num)

@@ -734,7 +734,9 @@ class Core {
           }
         },
         parentMessageId: conversation.parentMessageId,
-        conversationId: conversation.conversationId
+        conversationId: conversation.conversationId,
+        search: Config.geminiEnableGoogleSearch,
+        codeExecution: Config.geminiEnableCodeExecution
       }
       const image = await getImg(e)
       let imageUrl = image ? image[0] : undefined

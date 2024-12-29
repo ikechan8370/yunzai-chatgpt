@@ -27,11 +27,35 @@ export const HarmBlockThreshold = {
  *   parts: Array<{
  *     text?: string,
  *     functionCall?: FunctionCall,
- *     functionResponse?: FunctionResponse
+ *     functionResponse?: FunctionResponse,
+ *     executableCode?: {
+ *       language: string,
+ *       code: string
+ *     },
+ *     codeExecutionResult?: {
+ *       outcome: string,
+ *       output: string
+ *     }
  *   }>
  * }} Content
  *
  * Gemini消息的基本格式
+ */
+
+/**
+ * @typedef {{
+ *   searchEntryPoint: {
+ *     renderedContent: string,
+ *   },
+ *   groundingChunks: Array<{
+ *     web: {
+ *       uri: string,
+ *       title: string
+ *     }
+ *   }>,
+ *   webSearchQueries: Array<string>
+ * }} GroundingMetadata
+ * 搜索结果的元数据
  */
 
 /**
@@ -82,6 +106,8 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
    *     tokK: number?,
    *     replyPureTextCallback: Function,
    *     toolMode: 'AUTO' | 'ANY' | 'NONE'
+   *     search: boolean,
+   *     codeExecution: boolean
    * }} opt
    * @returns {Promise<{conversationId: string?, parentMessageId: string, text: string, id: string}>}
    */
@@ -164,15 +190,15 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
         temperature: opt.temperature || 0.9,
         topP: opt.topP || 0.95,
         topK: opt.tokK || 16
-      }
+      },
+      tools: []
     }
     if (this.tools?.length > 0) {
-      body.tools = [
-        {
-          function_declarations: this.tools.map(tool => tool.function())
-          // codeExecution: {}
-        }
-      ]
+      body.tools.push({
+        function_declarations: this.tools.map(tool => tool.function())
+        // codeExecution: {}
+      })
+
       // ANY要笑死人的效果
       let mode = opt.toolMode || 'AUTO'
       let lastFuncName = opt.functionResponse?.name
@@ -187,6 +213,12 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
           mode
         }
       }
+    }
+    if (opt.search) {
+      body.tools.push({ google_search: {} })
+    }
+    if (opt.codeExecution) {
+      body.tools.push({ code_execution: {} })
     }
     if (opt.image) {
       delete body.tools
@@ -211,13 +243,14 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
      */
     let responseContent
     /**
-     * @type {{candidates: Array<{content: Content}>}}
+     * @type {{candidates: Array<{content: Content, groundingMetadata: GroundingMetadata}>}}
      */
     let response = await result.json()
     if (this.debug) {
       console.log(JSON.stringify(response))
     }
     responseContent = response.candidates[0].content
+    let groundingMetadata = response.candidates[0].groundingMetadata
     if (responseContent.parts.find(i => i.functionCall)) {
       // functionCall
       const functionCall = responseContent.parts.find(i => i.functionCall).functionCall
@@ -275,6 +308,7 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
         // 递归直到返回text
         // 先把这轮的消息存下来
         await this.upsertMessage(thisMessage)
+        responseContent = handleSearchResponse(responseContent).responseContent
         const respMessage = Object.assign(responseContent, {
           id: idModel,
           parentMessageId: idThis
@@ -300,11 +334,54 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
       })
       await this.upsertMessage(respMessage)
     }
+    let { final } = handleSearchResponse(responseContent)
+    try {
+      if (groundingMetadata?.groundingChunks) {
+        final += '\n参考资料\n'
+        groundingMetadata.groundingChunks.forEach(chunk => {
+          // final += `[${chunk.web.title}](${chunk.web.uri})\n`
+          final += `[${chunk.web.title}]\n`
+        })
+        groundingMetadata.webSearchQueries.forEach(q => {
+          logger.info('search query: ' + q)
+        })
+      }
+    } catch (err) {
+      logger.warn(err)
+    }
+
     return {
-      text: responseContent.parts[0].text.trim(),
+      text: final,
       conversationId: '',
       parentMessageId: idThis,
       id: idModel
     }
+  }
+}
+
+/**
+ * 处理成单独的text
+ * @param {Content} responseContent
+ * @returns {{final: string, responseContent}}
+ */
+function handleSearchResponse (responseContent) {
+  let final = ''
+  for (let part of responseContent.parts) {
+    if (part.text) {
+      final += part.text
+    }
+    if (part.executableCode) {
+      final += '\n执行代码：\n' + '```' + part.executableCode.language + '\n' + part.executableCode.code.trim() + '\n```\n\n'
+    }
+    if (part.codeExecutionResult) {
+      final += `\n执行结果(${part.codeExecutionResult.outcome})：\n` + '```\n' + part.codeExecutionResult.output + '\n```\n\n'
+    }
+  }
+  responseContent.parts = [{
+    text: final
+  }]
+  return {
+    final,
+    responseContent
   }
 }
