@@ -1,388 +1,337 @@
-import _ from 'lodash';
-import { segment } from 'oicq';
+import _ from 'lodash'
+// import {segment} from "oicq";
 
-// 更新后的 faceMap 对象，保持原有的数字到字符串的映射结构
+// 更新后的 faceMap，使用 exports.facemap 的数据
 export const faceMap = {
-  0: '惊讶',
-  1: '撇嘴',
-  2: '色',
-  3: '发呆',
-  4: '得意',
-  5: '流泪',
-  6: '害羞',
-  7: '闭嘴',
-  8: '睡',
-  9: '大哭',
-  10: '尴尬',
-  11: '发怒',
-  12: '调皮',
-  13: '呲牙',
-  14: '微笑',
-  15: '难过',
-  16: '酷',
-  18: '抓狂',
-  19: '吐',
-  20: '偷笑',
-  21: '可爱',
-  22: '白眼',
-  23: '傲慢',
-  24: '饥饿',
-  25: '困',
-  26: '惊恐',
-  27: '流汗',
-  28: '憨笑',
-  29: '悠闲',
-  30: '奋斗',
-  31: '咒骂',
-  32: '疑问',
-  33: '嘘',
-  34: '晕',
-  35: '折磨',
-  36: '衰',
-  37: '骷髅',
-  38: '敲打',
-  39: '再见',
-  41: '发抖',
-  42: '爱情',
-  43: '跳跳',
-  46: '猪头',
-  49: '拥抱',
-  53: '蛋糕',
-  55: '++',
-  56: '刀',
-  59: '便便',
-  60: '咖啡',
-  63: '玫瑰',
-  64: '凋谢',
-  66: '爱心',
-  67: '心碎',
-  74: '太阳',
-  75: '月亮',
-  76: '赞',
-  77: '踩',
-  78: '握手',
-  79: '胜利',
-  85: '飞吻',
-  86: '怄火',
-  89: '西瓜',
-  96: '冷汗',
-  97: '擦汗',
-  98: '抠鼻',
-  99: '鼓掌',
-  100: '糗大了',
-  101: '坏笑',
-  102: '左哼哼',
-  103: '右哼哼',
-  104: '哈欠',
-  105: '鄙视',
-  106: '委屈',
-  107: '快哭了',
-  108: '阴险',
-  109: '左亲亲',
-  110: '吓',
-  111: '可怜',
-  112: '菜刀',
-  114: '篮球',
-  116: '示爱',
-  118: '抱拳',
-  119: '勾引',
-  120: '拳头',
-  121: '差劲',
-  122: '爱你',
-  123: 'NO',
-  124: 'OK',
-  125: '转圈',
-  129: '挥手',
-  137: '鞭炮',
-  144: '喝彩',
-  146: '爆筋',
-  147: '棒棒糖',
-  148: '喝奶',
-  169: '手枪',
-  171: '茶',
-  172: '眨眼睛',
-  173: '泪奔',
-  174: '无奈',
-  175: '卖萌',
-  176: '小纠结',
-  177: '喷血',
-  178: '斜眼笑',
-  179: 'doge',
-  180: '惊喜',
-  181: '戳一戳',
-  182: '笑哭',
-  183: '我最美',
-  185: '羊驼',
-  187: '幽灵',
-  193: '大笑',
-  194: '不开心',
-  198: '呃',
-  200: '求求',
-  201: '点赞',
-  202: '无聊',
-  203: '托脸',
-  204: '吃',
-  206: '害怕',
-  210: '飙泪',
-  211: '我不看',
-  212: '托腮',
-  214: '啵啵',
-  215: '糊脸',
-  216: '拍头',
-  217: '扯一扯',
-  218: '舔一舔',
-  219: '蹭一蹭',
-  221: '顶呱呱',
-  222: '抱抱',
-  223: '暴击',
-  224: '开枪',
-  225: '撩一撩',
-  226: '拍桌',
-  227: '拍手',
-  229: '干杯',
-  230: '嘲讽',
-  231: '哼',
-  232: '佛系',
-  233: '掐一掐',
-  235: '颤抖',
-  237: '偷看',
-  238: '扇脸',
-  239: '原谅',
-  240: '喷脸',
-  241: '生日快乐',
-  243: '甩头',
-  244: '扔狗',
-  262: '脑阔疼',
-  263: '沧桑',
-  264: '捂脸',
-  265: '辣眼睛',
-  266: '哦哟',
-  267: '头秃',
-  268: '问号脸',
-  269: '暗中观察',
-  270: 'emm',
-  271: '吃瓜',
-  272: '呵呵哒',
-  273: '我酸了',
-  277: '汪汪',
-  278: '汗',
-  281: '无眼笑',
-  282: '敬礼',
-  283: '狂笑',
-  284: '面无表情',
-  285: '摸鱼',
-  286: '魔鬼笑',
-  287: '哦',
-  288: '请',
-  289: '睁眼',
-  290: '敲开心',
-  292: '让我康康',
-  293: '摸锦鲤',
-  294: '期待',
-  295: '拿到红包',
-  297: '拜谢',
-  298: '元宝',
-  299: '牛啊',
-  300: '胖三斤',
-  301: '好闪',
-  302: '左拜年',
-  303: '右拜年',
-  305: '右亲亲',
-  306: '牛气冲天',
-  307: '喵喵',
-  311: '打call',
-  312: '变形',
-  314: '仔细分析',
-  317: '菜汪',
-  318: '崇拜',
-  319: '比心',
-  320: '庆祝',
-  322: '拒绝',
-  323: '嫌弃',
-  324: '吃糖',
-  325: '惊吓',
-  326: '生气',
-  332: '举牌牌',
-  333: '烟花',
-  334: '虎虎生威',
-  336: '豹富',
-  337: '花朵脸',
-  338: '我想开了',
-  339: '舔屏',
-  341: '打招呼',
-  342: '酸Q',
-  343: '我方了',
-  344: '大怨种',
-  345: '红包多多',
-  346: '你真棒棒',
-  347: '大展宏兔',
-  348: '福萝卜',
-  349: '坚强',
-  350: '贴贴',
-  351: '敲敲',
-  352: '咦',
-  353: '拜托',
-  354: '尊嘟假嘟',
-  355: '耶',
-  356: '666',
-  357: '裂开',
-  358: '骰子',
-  359: '包剪锤',
-  392: '龙年快乐',
-  393: '新年中龙',
-  394: '新年大龙',
-  395: '略略略'
+  0: { text: "/惊讶" },
+  1: { text: "/撇嘴" },
+  2: { text: "/色" },
+  3: { text: "/发呆" },
+  4: { text: "/得意" },
+  5: { text: "/流泪", stickerId: "16", stickerType: 1 },
+  6: { text: "/害羞" },
+  7: { text: "/闭嘴" },
+  8: { text: "/睡" },
+  9: { text: "/大哭" },
+  10: { text: "/尴尬" },
+  11: { text: "/发怒" },
+  12: { text: "/调皮" },
+  13: { text: "/呲牙" },
+  14: { text: "/微笑" },
+  15: { text: "/难过" },
+  16: { text: "/酷" },
+  18: { text: "/抓狂" },
+  19: { text: "/吐" },
+  20: { text: "/偷笑" },
+  21: { text: "/可爱" },
+  22: { text: "/白眼" },
+  23: { text: "/傲慢" },
+  24: { text: "/饥饿" },
+  25: { text: "/困" },
+  26: { text: "/惊恐" },
+  27: { text: "/流汗" },
+  28: { text: "/憨笑" },
+  29: { text: "/悠闲" },
+  30: { text: "/奋斗" },
+  31: { text: "/咒骂" },
+  32: { text: "/疑问" },
+  33: { text: "/嘘" },
+  34: { text: "/晕" },
+  35: { text: "/折磨" },
+  36: { text: "/衰" },
+  37: { text: "/骷髅" },
+  38: { text: "/敲打" },
+  39: { text: "/再见" },
+  41: { text: "/发抖" },
+  42: { text: "/爱情" },
+  43: { text: "/跳跳" },
+  46: { text: "/猪头" },
+  49: { text: "/拥抱" },
+  53: { text: "/蛋糕", stickerId: "17", stickerType: 1 },
+  55: { text: "/**" },
+  56: { text: "/刀" },
+  59: { text: "/便便" },
+  60: { text: "/咖啡" },
+  63: { text: "/玫瑰" },
+  64: { text: "/凋谢" },
+  66: { text: "/爱心" },
+  67: { text: "/心碎" },
+  74: { text: "/太阳", stickerId: "35", stickerType: 1 },
+  75: { text: "/月亮", stickerId: "36", stickerType: 1 },
+  76: { text: "/赞" },
+  77: { text: "/踩" },
+  78: { text: "/握手" },
+  79: { text: "/胜利" },
+  85: { text: "/飞吻" },
+  86: { text: "/怄火" },
+  89: { text: "/西瓜" },
+  96: { text: "/冷汗" },
+  97: { text: "/擦汗" },
+  98: { text: "/抠鼻" },
+  99: { text: "/鼓掌" },
+  100: { text: "/糗大了" },
+  101: { text: "/坏笑" },
+  102: { text: "/左哼哼" },
+  103: { text: "/右哼哼" },
+  104: { text: "/哈欠" },
+  105: { text: "/鄙视" },
+  106: { text: "/委屈" },
+  107: { text: "/快哭了" },
+  108: { text: "/阴险" },
+  109: { text: "/左亲亲" },
+  110: { text: "/吓" },
+  111: { text: "/可怜" },
+  112: { text: "/菜刀" },
+  114: { text: "/篮球", stickerId: "13", stickerType: 2 },
+  116: { text: "/示爱" },
+  118: { text: "/抱拳" },
+  119: { text: "/勾引" },
+  120: { text: "/拳头" },
+  121: { text: "/差劲" },
+  122: { text: "/爱你" },
+  123: { text: "/NO" },
+  124: { text: "/OK" },
+  125: { text: "/转圈" },
+  129: { text: "/挥手" },
+  137: { text: "/鞭炮", stickerId: "18", stickerType: 1 },
+  144: { text: "/喝彩" },
+  146: { text: "/爆筋" },
+  147: { text: "/棒棒糖" },
+  148: { text: "/喝奶" },
+  169: { text: "/手枪" },
+  171: { text: "/茶" },
+  172: { text: "/眨眼睛" },
+  173: { text: "/泪奔" },
+  174: { text: "/无奈" },
+  175: { text: "/卖萌" },
+  176: { text: "/小纠结" },
+  177: { text: "/喷血" },
+  178: { text: "/斜眼笑" },
+  179: { text: "/doge" },
+  180: { text: "/惊喜" },
+  181: { text: "/戳一戳", stickerId: "37", stickerType: 1 },
+  182: { text: "/笑哭" },
+  183: { text: "/我最美" },
+  185: { text: "/羊驼" },
+  187: { text: "/幽灵" },
+  193: { text: "/大笑" },
+  194: { text: "/不开心" },
+  198: { text: "/呃" },
+  200: { text: "/求求" },
+  201: { text: "/点赞" },
+  202: { text: "/无聊" },
+  203: { text: "/托脸" },
+  204: { text: "/吃" },
+  206: { text: "/害怕" },
+  210: { text: "/飙泪" },
+  211: { text: "/我不看" },
+  212: { text: "/托腮" },
+  214: { text: "/啵啵" },
+  215: { text: "/糊脸" },
+  216: { text: "/拍头" },
+  217: { text: "/扯一扯" },
+  218: { text: "/舔一舔" },
+  219: { text: "/蹭一蹭" },
+  221: { text: "/顶呱呱" },
+  222: { text: "/抱抱" },
+  223: { text: "/暴击" },
+  224: { text: "/开枪" },
+  225: { text: "/撩一撩" },
+  226: { text: "/拍桌" },
+  227: { text: "/拍手" },
+  229: { text: "/干杯" },
+  230: { text: "/嘲讽" },
+  231: { text: "/哼" },
+  232: { text: "/佛系" },
+  233: { text: "/掐一掐" },
+  235: { text: "/颤抖" },
+  237: { text: "/偷看" },
+  238: { text: "/扇脸" },
+  239: { text: "/原谅" },
+  240: { text: "/喷脸" },
+  241: { text: "/生日快乐" },
+  243: { text: "/甩头" },
+  244: { text: "/扔狗" },
+  262: { text: "/脑阔疼" },
+  263: { text: "/沧桑" },
+  264: { text: "/捂脸" },
+  265: { text: "/辣眼睛" },
+  266: { text: "/哦哟" },
+  267: { text: "/头秃" },
+  268: { text: "/问号脸" },
+  269: { text: "/暗中观察" },
+  270: { text: "/emm" },
+  271: { text: "/吃瓜" },
+  272: { text: "/呵呵哒" },
+  273: { text: "/我酸了" },
+  277: { text: "/汪汪" },
+  278: { text: "/汗" },
+  281: { text: "/无眼笑" },
+  282: { text: "/敬礼" },
+  283: { text: "/狂笑" },
+  284: { text: "/面无表情" },
+  285: { text: "/摸鱼" },
+  286: { text: "/魔鬼笑" },
+  287: { text: "/哦" },
+  288: { text: "/请" },
+  289: { text: "/睁眼" },
+  290: { text: "/敲开心" },
+  292: { text: "/让我康康" },
+  293: { text: "/摸锦鲤" },
+  294: { text: "/期待" },
+  295: { text: "/拿到红包" },
+  297: { text: "/拜谢" },
+  298: { text: "/元宝" },
+  299: { text: "/牛啊" },
+  300: { text: "/胖三斤" },
+  301: { text: "/好闪" },
+  302: { text: "/左拜年" },
+  303: { text: "/右拜年" },
+  305: { text: "/右亲亲" },
+  306: { text: "/牛气冲天" },
+  307: { text: "/喵喵" },
+  311: { text: "/打call", stickerId: "1", stickerType: 1 },
+  312: { text: "/变形", stickerId: "2", stickerType: 1 },
+  314: { text: "/仔细分析", stickerId: "4", stickerType: 1 },
+  317: { text: "/菜汪", stickerId: "7", stickerType: 1 },
+  318: { text: "/崇拜", stickerId: "8", stickerType: 1 },
+  319: { text: "/比心", stickerId: "9", stickerType: 1 },
+  320: { text: "/庆祝", stickerId: "10", stickerType: 1 },
+  322: { text: "/拒绝" },
+  323: { text: "/嫌弃" },
+  324: { text: "/吃糖", stickerId: "12", stickerType: 1 },
+  325: { text: "/惊吓", stickerId: "14", stickerType: 1 },
+  326: { text: "/生气", stickerId: "15", stickerType: 1 },
+  332: { text: "/举牌牌" },
+  333: { text: "/烟花", stickerId: "19", stickerType: 1 },
+  334: { text: "/虎虎生威" },
+  336: { text: "/豹富" },
+  337: { text: "/花朵脸", stickerId: "22", stickerType: 1 },
+  338: { text: "/我想开了", stickerId: "20", stickerType: 1 },
+  339: { text: "/舔屏", stickerId: "21", stickerType: 1 },
+  341: { text: "/打招呼", stickerId: "24", stickerType: 1 },
+  342: { text: "/酸Q", stickerId: "26", stickerType: 1 },
+  343: { text: "/我方了", stickerId: "27", stickerType: 1 },
+  344: { text: "/大怨种", stickerId: "28", stickerType: 1 },
+  345: { text: "/红包多多", stickerId: "29", stickerType: 1 },
+  346: { text: "/你真棒棒", stickerId: "25", stickerType: 1 },
+  347: { text: "/大展宏兔" },
+  348: { text: "/福萝卜" },
+  349: { text: "/坚强", stickerId: "32", stickerType: 1 },
+  350: { text: "/贴贴", stickerId: "31", stickerType: 1 },
+  351: { text: "/敲敲", stickerId: "30", stickerType: 1 },
+  352: { text: "/咦" },
+  353: { text: "/拜托" },
+  354: { text: "/尊嘟假嘟" },
+  355: { text: "/耶" },
+  356: { text: "/666" },
+  357: { text: "/裂开" },
+  358: { text: "/骰子", stickerId: "33", stickerType: 2 },
+  359: { text: "/包剪锤", stickerId: "34", stickerType: 2 },
+  392: { text: "/龙年快乐", stickerId: "38", stickerType: 3 },
+  393: { text: "/新年中龙", stickerId: "39", stickerType: 3 },
+  394: { text: "/新年大龙", stickerId: "40", stickerType: 3 },
+  395: { text: "/略略略", stickerId: "41", stickerType: 1 }
 };
 
 // 根据新的 faceMap 生成 faceMapReverse
-export const faceMapReverse = {};
-for (const key in faceMap) {
-  faceMapReverse[faceMap[key]] = key;
+export const faceMapReverse = {}
+for (const id in faceMap) {
+  faceMapReverse[faceMap[id].text] = id
 }
 
-// 注释掉 specialFaces
-// const specialFaces = {
-//   ...
-// };
-
-/**
- * 将消息中的表情占位符转换为 oicq 的表情代码
- * @param {string} msg 要转换的消息
- * @param {boolean} [handleAt=false] 是否处理 @ 消息，默认为 false
- * @param {object} [e=undefined] 消息事件对象，可选
- * @returns {Array} 转换后的消息段数组
- */
 export async function convertFaces(msg, handleAt = false, e) {
-  // 如果 e?.isGroup 为 true 且 handleAt 为 true，则设置 handleAt 为 true
-  handleAt = e?.isGroup && handleAt;
-  // 群成员列表
-  let groupMembers;
-  // 群名片到 QQ 号的映射
-  let groupCardQQMap = {};
-  // 如果需要处理 @ 消息
+  handleAt = e?.isGroup && handleAt
+  let groupMembers
+  let groupCardQQMap = {}
   if (handleAt) {
     try {
-      // 获取群成员列表
-      groupMembers = e.bot.gml;
+      groupMembers = e.bot.gml.get(e.group_id)
     } catch (err) {
-      // 如果获取失败，打印错误信息
-      console.error(`Failed to get group members: ${err}`);
+      console.error(`Failed to get group members: ${err}`)
     }
-    // 如果成功获取群成员列表
     if (groupMembers) {
-      // 遍历群成员列表
-      for (const key of groupMembers.keys()) {
-        // 将群名片或昵称映射到 QQ 号
-        groupCardQQMap[groupMembers.get(key).card || groupMembers.get(key).nickname] =
-          groupMembers.get(key).user_id;
+      for (let key of groupMembers.keys()) {
+        let userInfo = groupMembers.get(key)
+        if (userInfo.card) {
+          groupCardQQMap[userInfo.card] = userInfo.user_id
+        }
+        if (userInfo.nickname) {
+          groupCardQQMap[userInfo.nickname] = userInfo.user_id
+        }
       }
     }
   }
-  // 临时消息字符串
-  let tmpMsg = '';
-  // 临时表情字符串
-  let tmpFace = '';
-  // 临时 @ 字符串
-  let tmpAt = '';
-  // 是否找到表情
-  let foundFace = false;
-  // 是否找到 @
-  let foundAt = false;
-  // 转换后的消息段数组
-  const msgs = [];
-  // 遍历消息字符串
+  let tmpMsg = ''
+  let tmpFace = ''
+  let tmpAt = ''
+  let foundFace = false
+  let foundAt = false
+  let msgs = []
   for (let i = 0; i < msg.length; i++) {
-    // 如果找到 [
+    // console.log(msg[i])
     if (msg[i] === '[') {
-      // 设置 foundFace 为 true
-      foundFace = true;
-      continue;
+      foundFace = true
+      continue
     }
-    // 如果没有找到表情
     if (!foundFace) {
-      // 如果需要处理 @ 消息且找到 @
       if (handleAt && msg[i] === '@') {
-        // 设置 foundAt 为 true
-        foundAt = true;
-        // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
+        foundAt = true
         if (tmpMsg) {
-          msgs.push(tmpMsg);
-          tmpMsg = '';
+          msgs.push(tmpMsg)
+          tmpMsg = ''
         }
-        continue;
+        continue
       }
-      // 如果需要处理 @ 消息且 foundAt 为 true
       if (handleAt && foundAt) {
-        // 将当前字符添加到 tmpAt 中
-        tmpAt += msg[i];
-        // 如果在 groupCardQQMap 中找到 tmpAt
+        tmpAt += msg[i]
         if (groupCardQQMap[tmpAt]) {
-          // 设置 foundAt 为 false
-          foundAt = false;
-          // 将 @ 消息段添加到 msgs 数组中
-          msgs.push(segment.at(groupCardQQMap[tmpAt], groupMembers.get(groupCardQQMap[tmpAt]).card, false));
-          // 清空 tmpAt
-          tmpAt = '';
-          continue;
+          foundAt = false
+          msgs.push(segment.at(groupCardQQMap[tmpAt], groupMembers.get(groupCardQQMap[tmpAt]).card, false))
+          tmpAt = ''
+          continue
         }
       } else {
-        // 将当前字符添加到 tmpMsg 中
-        tmpMsg += msg[i];
+        tmpMsg += msg[i]
       }
     } else {
-      // 如果当前字符不是 ]
       if (msg[i] !== ']') {
-        // 将当前字符添加到 tmpFace 中
-        tmpFace += msg[i];
+        tmpFace += msg[i]
       } else {
-        // 设置 foundFace 为 false
-        foundFace = false;
-        // 从 faceMapReverse 中查找表情 ID
-        const faceId = faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')];
-        // 如果找到表情 ID
-        if (faceId) {
-          // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
+        foundFace = false
+        // 使用新的 faceMapReverse 进行查找
+        if (faceMapReverse[tmpFace] || faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')]) {
           if (tmpMsg) {
-            msgs.push(tmpMsg);
-            tmpMsg = '';
+            msgs.push(tmpMsg)
           }
-          // 添加表情消息段到 msgs 数组中
-          msgs.push(segment.face(parseInt(faceId)));
-          // 清空 tmpMsg
-          tmpMsg = '';
+          msgs.push(segment.face(parseInt(faceMapReverse[tmpFace] || faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')])))
+          tmpMsg = ''
         } else {
-          // 将 [ 和 tmpFace 拼接到 tmpMsg 中
-          tmpMsg += `[${tmpFace}]`;
+          tmpMsg += `[${tmpFace}]`
         }
-        // 清空 tmpFace
-        tmpFace = '';
+        tmpFace = ''
       }
     }
   }
-  // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
   if (tmpMsg) {
-    msgs.push(tmpMsg);
+    msgs.push(tmpMsg)
   }
-  // 如果 tmpFace 不为空，将其添加到 msgs 数组中
   if (tmpFace) {
-    msgs.push(`[${tmpFace}`);
+    msgs.push(`[${tmpFace}`)
   }
-  // 如果需要处理 @ 消息且 tmpAt 不为空，将其添加到 msgs 数组中
   if (handleAt && tmpAt) {
-    msgs.push(`@${tmpAt}`);
+    msgs.push(`@${tmpAt}`)
   }
-  // 返回转换后的消息段数组
-  return msgs;
+  return msgs
 }
 
-/**
- * 测试 convertFaces 函数
- */
 export function testConvertFaces() {
-  const toTest = ['你好啊[/微笑][惊讶]哈哈[/拜谢]'];
+  const toTest = [
+    '你好啊[/微笑][惊讶]哈哈[/拜谢]'
+  ]
   toTest.forEach(t => {
-    console.log(convertFaces(t));
-  });
+    console.log(convertFaces(t))
+  })
 }
 
-// testConvertFaces(); // 注释掉测试代码
+// testConvertFaces()
