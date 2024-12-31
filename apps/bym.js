@@ -10,7 +10,7 @@ import { SendVideoTool } from '../utils/tools/SendBilibiliTool.js'
 import { SendMusicTool } from '../utils/tools/SendMusicTool.js'
 import { SendPictureTool } from '../utils/tools/SendPictureTool.js'
 import { WebsiteTool } from '../utils/tools/WebsiteTool.js'
-import { convertFaces } from '../utils/face.js'
+import {  convertFaces, faceMap } from '../utils/face.js'
 import { WeatherTool } from '../utils/tools/WeatherTool.js'
 import { EditCardTool } from '../utils/tools/EditCardTool.js'
 import { JinyanTool } from '../utils/tools/JinyanTool.js'
@@ -130,7 +130,10 @@ export class bym extends plugin {
       let specialUserNotice = this.getSpecialUserNotice(sender);
 
       // 使用 specialUserNotice 更新提示词
-      opt.system = `你的名字是“${Config.assistantLabel}”，你在一个qq群里，群号是${group},当前和你说话的人群名片是${card}, qq号是${sender}${specialUserNotice}, 请你结合用户的发言和聊天记录作出回应，要求表现得随性一点，最好参与讨论，混入其中。${specialUserNotice ? '你要重视他的发言。' : ''}与你相关的话题时，你可以去回应一下，不相关你就随便应付就行了，不要过分插科打诨，不知道说什么可以复读群友的话。当群友要求你做搜索、发图、发视频和音乐等操作时要使用工具，不可以直接发文字来蒙混过关，你必须根据需要来调用各种工具，并回复相关问题。要求优先使用中文进行对话。` +
+      opt.system = `你的名字是“${Config.assistantLabel}”，你在一个qq群里，群号是${group},当前和你说话的人群名片是${card}, qq号是${sender}${specialUserNotice}, 请你结合用户的发言和聊天记录作出回应，要求表现得随性一点，最好参与讨论，混入其中。${specialUserNotice ? '你要重视他的发言。' : ''}与你相关的话题时，你可以去回应一下，不相关你就随便应付就行了，不要过分插科打诨，不知道说什么可以复读群友的话。当群友要求你做搜索、发图、发视频和音乐等操作时要使用工具，不可以直接发文字来蒙混过关，你必须根据需要来调用各种工具，并回复相关问题。要求优先使用中文进行对话。
+以下是你可以使用的表情列表：
+${Object.values(faceMap).map(face => `[/${face}]`).join('，')}
+请在回复中适当使用以上表情，但是不要过度使用这些表情。不要使用表情列表之外的任何表情。` +
         candidate +
         '以下是聊天记录:' + chats
           .map(chat => {
