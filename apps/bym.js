@@ -17,6 +17,7 @@ import { JinyanTool } from '../utils/tools/JinyanTool.js'
 import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 import {SerpTool} from '../utils/tools/SerpTool.js'
+import { APTool } from '../utils/tools/APTool.js'
 
 // 角色映射表
 const roleMap = {
@@ -163,6 +164,7 @@ ${Object.values(faceMap).map(face => `[/${face}]`).join('，')}
         new SendVideoTool(),
         new SendMusicTool(),
         new SendPictureTool(),
+        new APTool(),
         new WebsiteTool(),
         new WeatherTool()
       ]
