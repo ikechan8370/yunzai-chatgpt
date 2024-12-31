@@ -45,12 +45,24 @@ export function supportGuoba () {
           bottomHelpMessage: '开启后，则允许用户使用#chat1/#chat3/#chatglm/#bing等命令无视全局模式进行聊天',
           component: 'Switch'
         },
-        {
-          field: 'assistantLabel',
-          label: 'AI名字',
-          bottomHelpMessage: 'AI认为的自己的名字，当你问他你是谁是他会回答这里的名字',
-          component: 'Input'
-        },
+       {
+      field: 'assistantLabel',
+      label: 'AI名字',
+      bottomHelpMessage: 'AI认为的自己的名字，当你问他你是谁是他会回答这里的名字',
+      component: 'Input'
+    },
+    {
+      field: 'specialUserQQs',
+      label: '特殊用户QQ号',
+      bottomHelpMessage: '在这里添加特殊用户的QQ号码。',
+      component: 'Input'
+    },
+    {
+      field: 'specialUserNames',
+      label: '特殊用户名称',
+      bottomHelpMessage: '在这里添加特殊用户的名称。',
+      component: 'Input'
+    },
         {
           field: 'enableBYM',
           label: '开启伪人模式',

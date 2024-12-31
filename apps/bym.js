@@ -56,6 +56,27 @@ export class bym extends plugin {
     })
   }
 
+  /**
+   * 获取特殊身份用户的提示信息
+   * @param {number} sender - 发送者的 QQ 号码
+   * @returns {string} - 特殊身份用户的提示信息
+   */
+  getSpecialUserNotice(sender) {
+    // 获取特殊身份用户的 QQ 号码列表
+    const specialUserQQs = Config.specialUserQQs;
+    // 获取特殊身份用户的名称列表
+    const specialUserNames = Config.specialUserNames;
+
+    // 查找当前发送者是否在特殊身份用户列表中
+    const index = specialUserQQs.indexOf(String(sender));
+    if (index !== -1) {
+      // 如果找到了，获取对应的名称
+      const name = specialUserNames[index];
+      return `，其中 QQ 号码为 ${sender} 的用户是 ${name}，他是你的主人，你要重视他的发言。`;
+    }
+    return '';
+  }
+
   /** 复读 */
   async bym (e) {
     if (!Config.enableBYM) {
@@ -104,13 +125,18 @@ export class bym extends plugin {
     if (prop < Config.bymRate) {
       logger.info('random chat hit')
       let chats = await getChatHistoryGroup(e, 20)
-      opt.system = `你的名字是“${Config.assistantLabel}”，你在一个qq群里，群号是${group},当前和你说话的人群名片是${card}, qq号是${sender}, 请你结合用户的发言和聊天记录作出回应，要求表现得随性一点，最好参与讨论，混入其中。与你相关的话题时，你可以去回应一下，不相关你就随便应付就行了，不要过分插科打诨，不知道说什么可以复读群友的话。当群友要求你做搜索、发图、发视频和音乐等操作时要使用工具，不可以直接发文字来蒙混过关，你必须根据需要来调用各种工具，并回复相关问题。要求优先使用中文进行对话。` +
+
+      // 调用 getSpecialUserNotice 方法获取提示信息
+      let specialUserNotice = this.getSpecialUserNotice(sender);
+
+      // 使用 specialUserNotice 更新提示词
+      opt.system = `你的名字是“${Config.assistantLabel}”，你在一个qq群里，群号是${group},当前和你说话的人群名片是${card}, qq号是${sender}${specialUserNotice}, 请你结合用户的发言和聊天记录作出回应，要求表现得随性一点，最好参与讨论，混入其中。${specialUserNotice ? '你要重视他的发言。' : ''}与你相关的话题时，你可以去回应一下，不相关你就随便应付就行了，不要过分插科打诨，不知道说什么可以复读群友的话。当群友要求你做搜索、发图、发视频和音乐等操作时要使用工具，不可以直接发文字来蒙混过关，你必须根据需要来调用各种工具，并回复相关问题。要求优先使用中文进行对话。` +
         candidate +
-         '以下是聊天记录:' + chats
+        '以下是聊天记录:' + chats
           .map(chat => {
             let sender = chat.sender || chat || {}
-          return `【${sender.card || sender.nickname}】(qq：${sender.user_id}, ${roleMap[sender.role] || '未知角色'}, 群头衔：${sender.title || '无'}, 时间：${formatDate(new Date(chat.time * 1000))}, messageId: ${chat.message_id}) 说：${chat.raw_message}`
-        })
+            return `【${sender.card || sender.nickname}】(qq：${sender.user_id}, ${roleMap[sender.role] || '未知角色'}, 群头衔：${sender.title || '无'}, 时间：${formatDate(new Date(chat.time * 1000))}, messageId: ${chat.message_id}) 说：${chat.raw_message}`
+          })
           .join('\n') +
         `\n你的回复应该尽可能简练，像人类一样随意，但是也要保留“${Config.assistantLabel}”的角色风格，不要附加任何奇怪的东西，不能模仿聊天记录的格式，要以第一人称视角对话，禁止重复聊天记录。`
 
