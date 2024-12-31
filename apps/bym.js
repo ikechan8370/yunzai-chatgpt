@@ -16,7 +16,7 @@ import { EditCardTool } from '../utils/tools/EditCardTool.js'
 import { JinyanTool } from '../utils/tools/JinyanTool.js'
 import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
-
+import {SerpTool} from '../utils/tools/SerpTool.js'
 
 // 角色映射表
 const roleMap = {
@@ -163,6 +163,9 @@ export class bym extends plugin {
         new WebsiteTool(),
         new WeatherTool()
       ]
+      if (Config.azSerpKey) {
+        tools.push(new SerpTool())
+      }
       if (e.group.is_admin || e.group.is_owner) {
         tools.push(new EditCardTool())
         tools.push(new JinyanTool())
