@@ -136,7 +136,7 @@ export const faceMap = {
   206: '害怕',
   210: '飙泪',
   211: '我不看',
-  212: '思考||托腮',
+  212: '托腮',
   214: '啵啵',
   215: '糊脸',
   216: '拍头',
@@ -247,6 +247,9 @@ export const faceMap = {
 
 // 反向映射，将表情名称映射到表情 ID
 export const faceMapReverse = _.invert(faceMap);
+
+// 将“思考”重定向到 212（托腮）
+faceMapReverse['思考'] = '212';
 
 // 将消息中的表情占位符转换为 oicq 的表情代码
 export async function convertFaces(msg, handleAt = false, e) {
