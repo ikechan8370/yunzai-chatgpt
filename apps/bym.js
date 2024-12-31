@@ -16,6 +16,7 @@ import { EditCardTool } from '../utils/tools/EditCardTool.js'
 import { JinyanTool } from '../utils/tools/JinyanTool.js'
 import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
+import {SerpTool} from '../utils/tools/SerpTool.js'
 import fs from "fs";
 import { fileTypeFromBuffer } from 'file-type';
 import moment from 'moment';
@@ -131,7 +132,7 @@ export class bym extends plugin {
       }
       const picturesPath = pathModule.join(path, 'pictures');
       const fileImgList = await fs.promises.readdir(picturesPath);
-
+      
       let ForRole = ALLRole
       if (opt.image && !IsAtBot && !NotToImg && !e.at && Config.AutoToDownImg) {
         ALLRole = 'downimg'
@@ -163,6 +164,12 @@ export class bym extends plugin {
         if (e.msg) {
           const originalMsg = e.msg;
           const replacedMsg = replaceUserInput(e.msg);
+    let fuck = false
+    let candidate = Config.bymPreset
+    if (Config.bymFuckList?.find(i => e.msg.includes(i))) {
+      fuck = true
+      candidate = candidate + Config.bymFuckPrompt
+    }
 
           if (originalMsg !== replacedMsg) {
             e.msg = replacedMsg;
@@ -275,6 +282,9 @@ export class bym extends plugin {
         new WebsiteTool(),
         new WeatherTool()
       ]
+      if (Config.azSerpKey) {
+        tools.push(new SerpTool())
+      }
       if (e.group.is_admin || e.group.is_owner) {
         tools.push(new EditCardTool())
         tools.push(new JinyanTool())
