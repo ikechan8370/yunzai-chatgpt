@@ -72,7 +72,7 @@ export class bym extends plugin {
     if (index !== -1) {
       // 如果找到了，获取对应的名称
       const name = specialUserNames[index];
-      return `，其中 QQ 号码为 ${sender} 的用户是 ${name}，他是你的主人，你要重视他的发言。`;
+      return `，其中 QQ 号码为 ${sender}是你的${name}，你要重视他的发言。`;
     }
     return '';
   }
