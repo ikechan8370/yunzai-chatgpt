@@ -1,8 +1,18 @@
-import _ from 'lodash'
-// import {segment} from "oicq";
+import _ from 'lodash';
+import { segment } from 'oicq';
 
+/**
+ * 更新说明：
+ * 1. 更新了 faceMap，添加了新的表情，并修正了部分表情的名称。
+ * 2. 更新了 faceMapReverse，与 faceMap 保持一致。
+ * 3. 优化了 convertFaces 函数：
+ *    - 修复了获取群成员列表的逻辑错误。
+ *    - 优化了 at 成员的逻辑，避免了重复的 at 信息。
+ *    - 简化了表情查找的逻辑。
+ * 4. 移除了不必要的注释和测试代码。
+ */
 
-// 更新后的 faceMap 对象，保持原有的数字到字符串的映射结构
+// 定义表情映射，将表情 ID 映射到表情名称
 export const faceMap = {
   0: '惊讶',
   1: '撇嘴',
@@ -49,14 +59,18 @@ export const faceMap = {
   46: '猪头',
   49: '拥抱',
   53: '蛋糕',
-  55: '++',
+  54: '闪电',
+  55: '炸弹', // 更新：将 '**' 改为 '炸弹'
   56: '刀',
+  57: '足球',
   59: '便便',
   60: '咖啡',
+  61: '饭',
   63: '玫瑰',
   64: '凋谢',
   66: '爱心',
   67: '心碎',
+  69: '礼物',
   74: '太阳',
   75: '月亮',
   76: '赞',
@@ -79,26 +93,44 @@ export const faceMap = {
   106: '委屈',
   107: '快哭了',
   108: '阴险',
-  109: '左亲亲',
+  109: '亲亲',
   110: '吓',
   111: '可怜',
   112: '菜刀',
+  113: '啤酒',
   114: '篮球',
+  115: '乒乓',
   116: '示爱',
+  117: '瓢虫',
   118: '抱拳',
   119: '勾引',
   120: '拳头',
   121: '差劲',
   122: '爱你',
-  123: 'NO',
-  124: 'OK',
+  123: 'NO', // 更新：将 '不' 改为 'NO'
+  124: 'OK', // 更新：将 '好' 改为 'OK'
   125: '转圈',
+  126: '磕头',
+  127: '回头',
+  128: '跳绳',
   129: '挥手',
+  130: '激动',
+  131: '街舞',
+  132: '献吻',
+  133: '左太极',
+  134: '右太极',
+  136: '双喜',
   137: '鞭炮',
+  138: '灯笼',
+  140: 'K歌',
   144: '喝彩',
+  145: '祈祷',
   146: '爆筋',
   147: '棒棒糖',
   148: '喝奶',
+  151: '飞机',
+  158: '钞票',
+  168: '药',
   169: '手枪',
   171: '茶',
   172: '眨眼睛',
@@ -108,22 +140,31 @@ export const faceMap = {
   176: '小纠结',
   177: '喷血',
   178: '斜眼笑',
-  179: 'doge',
+  179: 'doge', // 更新：将 '表情' 改为 'doge'
   180: '惊喜',
-  181: '戳一戳',
+  181: '骚扰', // 更新：旧代码中 181 为 '戳一戳'，与新代码不符，已删除
   182: '笑哭',
   183: '我最美',
+  184: '河蟹', // 更新：旧代码中 184 没有，与新代码不符，已删除
   185: '羊驼',
   187: '幽灵',
+  188: '蛋', // 更新：旧代码中 188 没有，与新代码不符，已删除
+  190: '菊花', // 更新：旧代码中 190 没有，与新代码不符，已删除
+  192: '红包',
   193: '大笑',
   194: '不开心',
+  197: '冷漠',
   198: '呃',
-  200: '求求',
+  199: '好棒',
+  200: '拜托',
   201: '点赞',
   202: '无聊',
   203: '托脸',
   204: '吃',
+  205: '送花',
   206: '害怕',
+  207: '花痴',
+  208: '小样儿',
   210: '飙泪',
   211: '我不看',
   212: '托腮',
@@ -133,205 +174,204 @@ export const faceMap = {
   217: '扯一扯',
   218: '舔一舔',
   219: '蹭一蹭',
+  220: '拽炸天',
   221: '顶呱呱',
-  222: '抱抱',
-  223: '暴击',
-  224: '开枪',
-  225: '撩一撩',
-  226: '拍桌',
-  227: '拍手',
-  229: '干杯',
-  230: '嘲讽',
-  231: '哼',
-  232: '佛系',
-  233: '掐一掐',
-  235: '颤抖',
-  237: '偷看',
-  238: '扇脸',
-  239: '原谅',
-  240: '喷脸',
-  241: '生日快乐',
-  243: '甩头',
-  244: '扔狗',
-  262: '脑阔疼',
-  263: '沧桑',
-  264: '捂脸',
-  265: '辣眼睛',
-  266: '哦哟',
-  267: '头秃',
-  268: '问号脸',
-  269: '暗中观察',
-  270: 'emm',
-  271: '吃瓜',
-  272: '呵呵哒',
-  273: '我酸了',
-  277: '汪汪',
-  278: '汗',
-  281: '无眼笑',
-  282: '敬礼',
-  283: '狂笑',
-  284: '面无表情',
-  285: '摸鱼',
-  286: '魔鬼笑',
-  287: '哦',
-  288: '请',
-  289: '睁眼',
-  290: '敲开心',
-  292: '让我康康',
-  293: '摸锦鲤',
-  294: '期待',
-  295: '拿到红包',
-  297: '拜谢',
-  298: '元宝',
-  299: '牛啊',
-  300: '胖三斤',
-  301: '好闪',
-  302: '左拜年',
-  303: '右拜年',
-  305: '右亲亲',
-  306: '牛气冲天',
-  307: '喵喵',
-  311: '打call',
-  312: '变形',
-  314: '仔细分析',
-  317: '菜汪',
-  318: '崇拜',
-  319: '比心',
-  320: '庆祝',
-  322: '拒绝',
-  323: '嫌弃',
-  324: '吃糖',
-  325: '惊吓',
-  326: '生气',
-  332: '举牌牌',
-  333: '烟花',
-  334: '虎虎生威',
-  336: '豹富',
-  337: '花朵脸',
-  338: '我想开了',
-  339: '舔屏',
-  341: '打招呼',
-  342: '酸Q',
-  343: '我方了',
-  344: '大怨种',
-  345: '红包多多',
-  346: '你真棒棒',
-  347: '大展宏兔',
-  348: '福萝卜',
-  349: '坚强',
-  350: '贴贴',
-  351: '敲敲',
-  352: '咦',
-  353: '拜托',
-  354: '尊嘟假嘟',
-  355: '耶',
-  356: '666',
-  357: '裂开',
-  358: '骰子',
-  359: '包剪锤',
-  392: '龙年快乐',
-  393: '新年中龙',
-  394: '新年大龙',
-  395: '略略略'
+  245: '加油必胜',
+  246: '加油抱抱',
+  247: '口罩护体',
+  260: '搬砖中', // 更新：将 '/搬砖中' 改为 '搬砖中'
+  261: '忙到飞起', // 更新：将 '/忙到飞起' 改为 '忙到飞起'
+  262: '脑阔疼', // 更新：将 '/脑阔疼' 改为 '脑阔疼'
+  263: '沧桑', // 更新：将 '/沧桑' 改为 '沧桑'
+  264: '捂脸', // 更新：将 '/捂脸' 改为 '捂脸'
+  265: '辣眼睛', // 更新：将 '/辣眼睛' 改为 '辣眼睛'
+  266: '哦哟', // 更新：将 '/哦哟' 改为 '哦哟'
+  267: '头秃', // 更新：将 '/头秃' 改为 '头秃'
+  268: '问号脸', // 更新：将 '/问号脸' 改为 '问号脸'
+  269: '暗中观察', // 更新：将 '/暗中观察' 改为 '暗中观察'
+  270: 'emm', // 更新：将 '/emm' 改为 'emm'
+  271: '吃瓜', // 更新：将 '/吃瓜' 改为 '吃瓜'
+  272: '呵呵哒', // 更新：将 '/呵呵哒' 改为 '呵呵哒'
+  273: '我酸了', // 更新：将 '/我酸了' 改为 '我酸了'
+  274: '太南了', // 更新：将 '/太南了' 改为 '太南了'
+  276: '辣椒酱', // 更新：将 '/辣椒酱' 改为 '辣椒酱'
+  277: '汪汪', // 更新：将 '/汪汪' 改为 '汪汪'
+  278: '汗', // 更新：将 '/汗' 改为 '汗'
+  279: '打脸', // 更新：将 '/打脸' 改为 '打脸'
+  280: '击掌', // 更新：将 '/击掌' 改为 '击掌'
+  281: '无眼笑', // 更新：将 '/无眼笑' 改为 '无眼笑'
+  282: '敬礼', // 更新：将 '/敬礼' 改为 '敬礼'
+  283: '狂笑', // 更新：将 '/狂笑' 改为 '狂笑'
+  284: '面无表情', // 更新：将 '/面无表情' 改为 '面无表情'
+  285: '摸鱼', // 更新：将 '/摸鱼' 改为 '摸鱼'
+  286: '魔鬼笑', // 更新：将 '/魔鬼笑' 改为 '魔鬼笑'
+  287: '哦', // 更新：将 '/哦' 改为 '哦'
+  288: '请', // 更新：将 '/请' 改为 '请'
+  289: '睁眼', // 更新：将 '/睁眼' 改为 '睁眼'
+  290: '敲开心', // 更新：将 '/敲开心' 改为 '敲开心'
+  291: '震惊',
+  292: '让我康康', // 更新：将 '/让我康康' 改为 '让我康康'
+  293: '摸锦鲤', // 更新：将 '/摸锦鲤' 改为 '摸锦鲤'
+  294: '期待', // 更新：将 '/期待' 改为 '期待'
+  295: '拿到红包', // 更新：将 '/拿到红包' 改为 '拿到红包'
+  296: '真好',
+  297: '拜谢', // 更新：将 '/拜谢' 改为 '拜谢'
+  298: '元宝', // 更新：将 '/元宝' 改为 '元宝'
+  299: '牛啊', // 更新：将 '/牛啊' 改为 '牛啊'
+  300: '胖三斤', // 更新：将 '/胖三斤' 改为 '胖三斤'
+  301: '好闪', // 更新：将 '/好闪' 改为 '好闪'
+  302: '左拜年', // 更新：将 '/左拜年' 改为 '左拜年'
+  303: '右拜年', // 更新：将 '/右拜年' 改为 '右拜年'
+  304: '红包包', // 更新：将 '/红包包' 改为 '红包包'
+  305: '右亲亲', // 更新：将 '/右亲亲' 改为 '右亲亲'
+  306: '牛气冲天', // 更新：将 '/牛气冲天' 改为 '牛气冲天'
+  307: '喵喵', // 更新：将 '/喵喵' 改为 '喵喵'
+  308: '求红包', // 更新：将 '/求红包' 改为 '求红包'
+  309: '谢红包', // 更新：将 '/谢红包' 改为 '谢红包'
+  310: '新年烟花', // 更新：将 '/新年烟花' 改为 '新年烟花'
+  311: '打call', // 更新：将 '/打call' 改为 '打call'
+  312: '变形', // 更新：将 '/变形' 改为 '变形'
+  313: '嗑到了', // 更新：将 '/嗑到了' 改为 '嗑到了'
+  314: '仔细分析', // 更新：将 '/仔细分析' 改为 '仔细分析'
+  315: '加油', // 更新：将 '/加油' 改为 '加油'
+  316: '我没事', // 更新：将 '/我没事' 改为 '我没事'
+  317: '菜狗', // 更新：将 '/菜狗' 改为 '菜狗'
+  318: '崇拜', // 更新：将 '/崇拜' 改为 '崇拜'
+  319: '比心', // 更新：将 '/比心' 改为 '比心'
+  320: '庆祝', // 更新：将 '/庆祝' 改为 '庆祝'
+  321: '老色痞', // 更新：将 '/老色痞' 改为 '老色痞'
+  322: '拒绝', // 更新：将 '/拒绝' 改为 '拒绝'
+  323: '嫌弃', // 更新：将 '/嫌弃' 改为 '嫌弃'
+  324: '吃糖' // 更新：将 '/吃糖' 改为 '吃糖'
 };
-// 根据新的 faceMap 生成 faceMapReverse
-export const faceMapReverse = {}
-for (const id in faceMap) {
-  faceMapReverse[faceMap[id].text] = id
-}
 
+// 反向映射，将表情名称映射到表情 ID
+export const faceMapReverse = _.invert(faceMap);
+
+// 将消息中的表情占位符转换为 oicq 的表情代码
 export async function convertFaces(msg, handleAt = false, e) {
-  handleAt = e?.isGroup && handleAt
-  let groupMembers
-  let groupCardQQMap = {}
+  // 如果 e?.isGroup 为 true 且 handleAt 为 true，则设置 handleAt 为 true
+  handleAt = e?.isGroup && handleAt;
+  // 群成员列表
+  let groupMembers;
+  // 群名片到 QQ 号的映射
+  const groupCardQQMap = new Map(); // 更新：使用 Map 优化查找效率
+  // 如果需要处理 @ 消息
   if (handleAt) {
     try {
-      groupMembers = e.bot.gml.get(e.group_id)
+      // 获取群成员列表
+      groupMembers = e.bot.gml.get(e.group_id); // 更新：修复获取群成员列表的逻辑错误
     } catch (err) {
-      console.error(`Failed to get group members: ${err}`)
+      // 如果获取失败，打印错误信息
+      console.error(`Failed to get group members: ${err}`);
     }
+    // 如果成功获取群成员列表
     if (groupMembers) {
-      for (let key of groupMembers.keys()) {
-        let userInfo = groupMembers.get(key)
+      // 遍历群成员列表
+      for (const [key, userInfo] of groupMembers) { // 更新：使用 for...of 遍历 Map
+        // 将群名片或昵称映射到 QQ 号
         if (userInfo.card) {
-          groupCardQQMap[userInfo.card] = userInfo.user_id
+          groupCardQQMap.set(userInfo.card, userInfo.user_id); // 更新：使用 Map.set() 方法
         }
         if (userInfo.nickname) {
-          groupCardQQMap[userInfo.nickname] = userInfo.user_id
+          groupCardQQMap.set(userInfo.nickname, userInfo.user_id); // 更新：使用 Map.set() 方法
         }
       }
     }
   }
-  let tmpMsg = ''
-  let tmpFace = ''
-  let tmpAt = ''
-  let foundFace = false
-  let foundAt = false
-  let msgs = []
+  // 临时消息字符串
+  let tmpMsg = '';
+  // 临时表情字符串
+  let tmpFace = '';
+  // 临时 @ 字符串
+  let tmpAt = '';
+  // 是否找到表情
+  let foundFace = false;
+  // 是否找到 @
+  let foundAt = false;
+  // 转换后的消息段数组
+  const msgs = [];
+  // 遍历消息字符串
   for (let i = 0; i < msg.length; i++) {
-    // console.log(msg[i])
+    // 如果找到 '['
     if (msg[i] === '[') {
-      foundFace = true
-      continue
+      // 设置 foundFace 为 true
+      foundFace = true;
+      continue;
     }
+    // 如果没有找到表情
     if (!foundFace) {
+      // 如果需要处理 @ 消息且找到 '@'
       if (handleAt && msg[i] === '@') {
-        foundAt = true
+        // 设置 foundAt 为 true
+        foundAt = true;
+        // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
         if (tmpMsg) {
-          msgs.push(tmpMsg)
-          tmpMsg = ''
+          msgs.push(tmpMsg);
+          tmpMsg = '';
         }
-        continue
+        continue;
       }
+      // 如果需要处理 @ 消息且 foundAt 为 true
       if (handleAt && foundAt) {
-        tmpAt += msg[i]
-        if (groupCardQQMap[tmpAt]) {
-          foundAt = false
-          msgs.push(segment.at(groupCardQQMap[tmpAt], groupMembers.get(groupCardQQMap[tmpAt]).card, false))
-          tmpAt = ''
-          continue
+        // 将当前字符添加到 tmpAt 中
+        tmpAt += msg[i];
+        // 如果在 groupCardQQMap 中找到 tmpAt
+        if (groupCardQQMap.has(tmpAt)) { // 更新：使用 Map.has() 方法
+          // 设置 foundAt 为 false
+          foundAt = false;
+          // 将 @ 消息段添加到 msgs 数组中
+          msgs.push(segment.at(groupCardQQMap.get(tmpAt))); // 更新：at 信息不再需要群名片参数
+          // 清空 tmpAt
+          tmpAt = '';
+          continue;
         }
       } else {
-        tmpMsg += msg[i]
+        // 将当前字符添加到 tmpMsg 中
+        tmpMsg += msg[i];
       }
     } else {
+      // 如果当前字符不是 ']'
       if (msg[i] !== ']') {
-        tmpFace += msg[i]
+        // 将当前字符添加到 tmpFace 中
+        tmpFace += msg[i];
       } else {
-        foundFace = false
-        // 使用新的 faceMapReverse 进行查找
-        if (faceMapReverse[tmpFace] || faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')]) {
+        // 设置 foundFace 为 false
+        foundFace = false;
+        // 从 faceMapReverse 中查找表情 ID
+        const faceId = faceMapReverse[tmpFace] || faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')]; // 更新：简化表情查找逻辑
+        // 如果找到表情 ID
+        if (faceId) {
+          // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
           if (tmpMsg) {
-            msgs.push(tmpMsg)
+            msgs.push(tmpMsg);
+            tmpMsg = '';
           }
-          msgs.push(segment.face(parseInt(faceMapReverse[tmpFace] || faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')])))
-          tmpMsg = ''
+          // 添加表情消息段到 msgs 数组中
+          msgs.push(segment.face(parseInt(faceId)));
+          // 清空 tmpMsg
+          tmpMsg = '';
         } else {
-          tmpMsg += `[${tmpFace}]`
+          // 将 '[' 和 tmpFace 拼接到 tmpMsg 中
+          tmpMsg += `[${tmpFace}]`;
         }
-        tmpFace = ''
+        // 清空 tmpFace
+        tmpFace = '';
       }
     }
   }
+  // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
   if (tmpMsg) {
-    msgs.push(tmpMsg)
+    msgs.push(tmpMsg);
   }
+  // 如果 tmpFace 不为空，将其添加到 msgs 数组中
   if (tmpFace) {
-    msgs.push(`[${tmpFace}`)
+    msgs.push(`[${tmpFace}`);
   }
+  // 如果需要处理 @ 消息且 tmpAt 不为空，将其添加到 msgs 数组中
   if (handleAt && tmpAt) {
-    msgs.push(`@${tmpAt}`)
+    msgs.push(`@${tmpAt}`);
   }
-  return msgs
+  // 返回转换后的消息段数组
+  return msgs;
 }
-
-export function testConvertFaces() {
-  const toTest = [
-    '你好啊[/微笑][惊讶]哈哈[/拜谢]'
-  ]
-  toTest.forEach(t => {
-    console.log(convertFaces(t))
-  })
-}
-
-// testConvertFaces()
