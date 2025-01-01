@@ -38,7 +38,7 @@ export class URLSummarizerTool extends AbstractTool {
     }
   };
 
-  description = 'Summarizes the content of a URL using OpenAI API, providing a concise summary.';
+  description = 'Summarizes the content of a URL using OpenAI API, providing a comprehensiveness summary.';
 }
 
 // Use OpenAI API to summarize the URL directly
@@ -66,7 +66,7 @@ async function summarizeURL(url, length) {
           content: `Summarize this article: ${url}`, // Directly send the URL
         },
       ],
-      max_tokens: 500 * length,
+      max_tokens: 1000 * length,
     }),
   });
 
