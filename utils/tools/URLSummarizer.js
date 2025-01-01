@@ -59,11 +59,11 @@ async function summarizeURL(url, length) {
       messages: [
         {
           role: 'system',
-          content: `You are a helpful assistant that summarizes web pages. Please summarize the content of the following URL in ${length} sentences. Provide a concise and clear summary.`,
+          content: `You are a summarization assistant. Summarize the content of the following URL in ${length} sentences in Chinese.`,
         },
         {
           role: 'user',
-          content: `Summarize this URL: ${url}`, // Directly send the URL
+          content: `Summarize this article: ${url}`, // Directly send the URL
         },
       ],
       max_tokens: 150 * length,
