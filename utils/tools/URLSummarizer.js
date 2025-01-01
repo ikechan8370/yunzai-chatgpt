@@ -9,7 +9,7 @@ export class URLSummarizerTool extends AbstractTool {
     properties: {
       url: {
         type: 'string',
-        description: 'The URL to be summarized. Cannot be empty.',
+        description: 'The URL to be summarized, cannot be empty.',
       },
       length: {
         type: 'integer',
@@ -26,11 +26,11 @@ export class URLSummarizerTool extends AbstractTool {
     }
 
     try {
-      // 使用 OpenAI API 进行文本摘要
+      // Directly use OpenAI API to summarize the URL
       const summarizedText = await summarizeURL(url, length);
       console.log(`Summarized text: ${summarizedText}`);
 
-      // 将摘要结果返回给 AI
+      // Return the summarized text to the AI
       return summarizedText;
     } catch (error) {
       console.error('Summarization failed:', error);
@@ -41,10 +41,11 @@ export class URLSummarizerTool extends AbstractTool {
   description = 'Summarizes the content of a URL using OpenAI API, providing a concise summary.';
 }
 
-// 使用 OpenAI API 进行 URL 摘要
-const summarizeURL = async (url, length) => {
+// Use OpenAI API to summarize the URL directly
+async function summarizeURL(url, length) {
   const apiKey = Config.apiKey;
-  const apiUrl = Config.openAiBaseUrl;
+  const apiBaseUrl = Config.openAiBaseUrl;
+  const apiUrl = `${apiBaseUrl}/chat/completions`; // Concatenate /chat/completions to the base URL
   const model = Config.model;
 
   const response = await fetch(apiUrl, {
@@ -58,11 +59,14 @@ const summarizeURL = async (url, length) => {
       messages: [
         {
           role: 'system',
-          content: `You are a helpful assistant that summarizes web pages. Please summarize the content of this URL in ${length} sentences. Provide a concise and clear summary.`,
+          content: `You are a helpful assistant that summarizes web pages. Please summarize the content of the following URL in ${length} sentences. Provide a concise and clear summary.`,
         },
-        { role: 'user', content: `Summarize this URL: ${url}` },
+        {
+          role: 'user',
+          content: `Summarize this URL: ${url}`, // Directly send the URL
+        },
       ],
-      max_tokens: 150 * length, // 粗略估计每个句子 150 个 token
+      max_tokens: 150 * length,
     }),
   });
 
@@ -71,4 +75,4 @@ const summarizeURL = async (url, length) => {
     throw new Error(`OpenAI API Error: ${data.error.message}`);
   }
   return data.choices[0].message.content;
-};
+}
