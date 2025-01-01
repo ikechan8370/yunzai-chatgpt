@@ -66,7 +66,7 @@ async function summarizeURL(url, length) {
           content: `Summarize this article: ${url}`, // Directly send the URL
         },
       ],
-      max_tokens: 150 * length,
+      max_tokens: 500 * length,
     }),
   });
 
