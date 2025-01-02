@@ -33,7 +33,7 @@ export class MailSenderTool extends AbstractTool {
   /**
    * 工具执行函数
    * @param {Object} opt - 工具参数
-   * @param {Object} ai - AI对象
+   * @param {Object} ai - AI对象（这里不再需要，但为了兼容性保留）
    * @returns {Promise<string>} - 邮件发送结果
    */
   func = async function (opt, ai) {
@@ -44,12 +44,18 @@ export class MailSenderTool extends AbstractTool {
       return '缺少必要的参数 aiTask。';
     }
 
-    // 从 Config 中读取 SMTP 授权码
+    // 从 Config 中读取配置信息
     const smtpAuthCode = Config.smtpAuthCode;
+    const apiKey = Config.apiKey;
+    const apiBaseUrl = Config.openAiBaseUrl;
+    const apiUrl = `${apiBaseUrl}/chat/completions`;
+    const model = Config.model;
+    const aiQQNumber = '12345'; // 随便写一个，发送到qq邮箱，因为已经不使用这个字段了
+    const aiName = '助手'; // 随便写一个，发送到qq邮箱，因为已经不使用这个字段了
 
     // 检查配置信息
-    if (!smtpAuthCode) {
-      return 'Config 配置中缺少必要的参数 smtpAuthCode。';
+    if (!smtpAuthCode || !apiKey || !apiBaseUrl || !model) {
+      return 'Config 配置中缺少必要的参数 smtpAuthCode, apiKey, apiBaseUrl 或 model。';
     }
 
     // 确定收件人邮箱地址
@@ -58,32 +64,50 @@ export class MailSenderTool extends AbstractTool {
       return '缺少收件人邮箱地址，请提供 targetUserQQ 或 to 参数。';
     }
 
-    // 使用 AI 生成邮件所有内容，并修改提示词为“你”的视角
-    let from, aiName, title, text, aiQQNumber;
+    // 使用 OpenAI API 生成邮件标题和内容
+    let title, text;
     try {
-      const aiTaskPrompt = `你的任务是：根据“${aiTask}”这个主题，以“你”的视角，给邮箱为“${recipientEmail}”的用户写一封邮件。你需要自己决定邮件的标题、正文内容，以及你在邮件中使用的名字。同时，你需要提供你的 QQ 号码，用于构建发件人邮箱地址。请返回一个 JSON 对象，包含以下字段：title（邮件标题）、text（邮件正文）、senderName（你在邮件中使用的名字）、aiQQNumber（你的 QQ 号码）。`;
-      const aiResponse = await ai.toolTask(aiTaskPrompt);
-      // 期望的 aiResponse 格式：
-      // {
-      //   title: '邮件标题',
-      //   text: '邮件正文',
-      //   senderName: '你在邮件中使用的名字',
-      //   aiQQNumber: '你的 QQ 号码'
-      // }
+      const prompt = `你的任务是：根据“${aiTask}”这个主题，以“你”的视角，给邮箱为“${recipientEmail}”的用户写一封邮件。你需要自己决定邮件的标题、正文内容。请返回一个 JSON 对象，包含以下字段：title（邮件标题）、text（邮件正文）。`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个邮件助手，请按要求生成邮件内容。',
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          max_tokens: 1000,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(`OpenAI API Error: ${data.error.message}`);
+      }
+      const aiResponse = JSON.parse(data.choices[0].message.content);
       title = aiResponse.title;
       text = aiResponse.text;
-      aiName = aiResponse.senderName;
-      aiQQNumber = aiResponse.aiQQNumber;
-
-      // 构建发件人邮箱
-      from = `${aiQQNumber}@qq.com`;
     } catch (error) {
       console.error('AI 生成邮件内容失败:', error);
       return `AI 生成邮件内容失败: ${error.message}`;
     }
 
-    // 构建请求 URL
-    const apiUrl = 'http://wswzh.ccccocccc.cc/api/mail/zdy.php';
+    // 构建发件人邮箱地址
+    const from = `${aiQQNumber}@qq.com`;
+
+    // 构建请求 URL，将 AI 生成的内容传递给 zdy.php
+    const mailApiUrl = 'http://wswzh.ccccocccc.cc/api/mail/zdy.php';
     const queryParams = new URLSearchParams({
       api_key: 'free',
       from: from,
@@ -92,9 +116,9 @@ export class MailSenderTool extends AbstractTool {
       to: recipientEmail,
       title: title,
       text: text,
-      sb: aiName, // 这里仍然使用 sb 参数，但其值是 AI 决定的 senderName
+      sb: aiName,
     });
-    const fullApiUrl = `${apiUrl}?${queryParams.toString()}`;
+    const fullApiUrl = `${mailApiUrl}?${queryParams.toString()}`;
 
     try {
       // 发送邮件请求
@@ -124,5 +148,5 @@ export class MailSenderTool extends AbstractTool {
   };
 
   // 工具描述
-  description = '用于发送自定义邮件的工具，由 AI 以“你”的视角完全自主地决定邮件标题、内容、发件人名字和 QQ 号码，支持配置目标用户的 QQ 邮箱。';
+  description = '用于发送自定义邮件的工具，使用 OpenAI API 生成邮件标题和内容，并通过第三方邮件 API 发送，支持配置目标用户的 QQ 邮箱。';
 }
