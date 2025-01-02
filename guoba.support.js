@@ -54,19 +54,13 @@ export function supportGuoba () {
     {
       field: 'specialUserQQs',
       label: '特殊用户QQ号',
-      bottomHelpMessage: '在这里添加特殊用户的QQ号码。', 
+      bottomHelpMessage: '在这里添加特殊用户的QQ号码。',
       component: 'Input'
     },
     {
       field: 'specialUserNames',
       label: '特殊用户名称',
       bottomHelpMessage: '在这里添加特殊用户的名称。',
-      component: 'Input'
-    },
-    {
-      field: 'smtpAuthCode',
-      label: 'qq邮箱授权码',
-      bottomHelpMessage: '在这里添加你的授权码', 
       component: 'Input'
     },
         {
