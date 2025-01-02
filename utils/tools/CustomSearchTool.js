@@ -1,6 +1,7 @@
-import { AbstractTool } from './AbstractTool.js';
-import fetch from 'node-fetch';
-import { Config } from '../config.js';
+import { AbstractTool } from './AbstractTool.js'
+import fetch from 'node-fetch'
+import { Config } from '../config.js'
+import { UrlExtractionTool } from './UrlExtractionTool.js' // 1. 引入 UrlExtractionTool
 
 /**
  * 自定义搜索工具类
@@ -39,36 +40,56 @@ export class CustomSearchTool extends AbstractTool {
     }
 
     try {
-      // 使用OpenAI API进行搜索或摘要
-      const result = await searchOrSummarize(query, length);
+      // 尝试使用OpenAI API进行搜索或摘要
+      let result = await searchOrSummarize(query, length);
+
+      // 2. 修改 func 方法: 判断是否为 URL 且 searchOrSummarize 结果不理想
+      const isUrl = /^(https?:\/\/)/i.test(query);
+      if (isUrl && (!result || result.includes("failed") || result.trim() === '')) { // 假设不理想的结果包括空字符串或包含"failed"
+        console.log(`[CustomSearchTool] searchOrSummarize failed or returned empty for URL, trying UrlExtractionTool...`);
+
+        // 创建 UrlExtractionTool 实例
+        const urlTool = new UrlExtractionTool();
+
+        // 调用 UrlExtractionTool 的 func 方法提取 URL 内容
+        const extractionResult = await urlTool.func({ message: query, appendContent: false });
+
+        // 3. 整合提取的内容: 如果提取成功，则将提取的内容作为 searchOrSummarize 的输入
+        if (extractionResult && extractionResult.extractedContent) {
+          console.log(`[CustomSearchTool] Successfully extracted content using UrlExtractionTool, summarizing...`);
+          result = await searchOrSummarize(extractionResult.extractedContent, length);
+        } else {
+          // 如果 UrlExtractionTool 也失败了，则返回错误信息
+          return `Failed to extract content from URL and summarize. ${extractionResult.message}`;
+        }
+      }
+
       console.log(`Search or summarization result: ${result}`);
 
       // 返回搜索结果或摘要给AI
       return result;
     } catch (error) {
+      // 4. 优化错误处理: 捕获 UrlExtractionTool 可能抛出的错误
       console.error('Search or summarization failed:', error);
       return `Search or summarization failed, please check the logs. ${error.message}`;
     }
   };
 
   // 工具描述
-  description = 'Use OpenAI API for custom search or summarize URL content, providing comprehensive search results or summaries.';
+  description = 'Use OpenAI API for custom search or summarize URL content, providing comprehensive search results or summaries. If a URL is provided and summarization fails, it will attempt to extract the content first and then summarize.';
 }
 
 /**
  * 使用OpenAI API进行搜索或摘要
- * @param {string} query - 搜索关键词或URL
+ * @param {string} query - 搜索关键词或URL提取的内容
  * @param {number} length - 期望的摘要长度（以句子为单位）
  * @returns {Promise<string>} - 搜索结果或摘要
  */
 async function searchOrSummarize(query, length) {
   const apiKey = Config.apiKey;
   const apiBaseUrl = Config.openAiBaseUrl;
-  const apiUrl = `${apiBaseUrl}/chat/completions`; // 将/chat/completions连接到基本URL
+  const apiUrl = `${apiBaseUrl}/chat/completions`;
   const model = Config.model;
-
-  // 判断是URL还是关键词
-  const isUrl = /^(https?:\/\/)/i.test(query);
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -81,11 +102,11 @@ async function searchOrSummarize(query, length) {
       messages: [
         {
           role: 'system',
-          content: `You are a search and summarization assistant. ${isUrl ? `Please summarize the content of the following URL in English, with a length of ${length} sentences.` : `Please use English to search based on the following keywords and return a summary of ${length} sentences.`}`,
+          content: `You are a search and summarization assistant. Please use English to search based on the following keywords or summarize the provided text, and return a summary of ${length} sentences.`,
         },
         {
           role: 'user',
-          content: `${isUrl ? `Summarize this article: ${query}` : `Search: ${query}`}`, // 根据是URL还是关键词发送不同的内容
+          content: `Search or summarize: ${query}`,
         },
       ],
       max_tokens: 1000 * length,
