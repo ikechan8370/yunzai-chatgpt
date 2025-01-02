@@ -20,34 +20,40 @@ export class CustomSearchTool extends AbstractTool {
         type: 'integer',
         description: '期望的摘要长度（句子数），默认为3',
       },
-      imageBase64: {
-        type: 'string',
-        description: '可选的图片base64数据',
+      sender: {
+        type: 'object',
+        description: '发送者信息',
       }
     },
-    required: ['query'],
+    required: ['query', 'sender'],
   };
 
-  description = '使用 Gemini API 进行智能搜索，根据输入的内容或关键词提供全面的搜索结果和摘要。支持自定义摘要长度和图片识别。';
+  description = '使用 Gemini API 进行智能搜索，根据输入的内容或关键词提供全面的搜索结果和摘要。支持自定义摘要长度。';
 
   /**
    * 工具执行函数
    * @param {Object} opt - 工具参数
    * @param {string} opt.query - 搜索内容或关键词
    * @param {number} [opt.length=3] - 摘要长度
-   * @param {string|string[]} [opt.imageBase64] - 图片base64数据
+   * @param {Object} opt.sender - 发送者信息
    * @returns {Promise<Object>} - 包含答案和来源的对象
    */
   func = async function (opt) {
-    const { query, length = 3, imageBase64 } = opt;
+    const { query, length = 3, sender } = opt;
 
     if (!query?.trim()) {
       throw new Error('搜索内容或关键词不能为空');
     }
 
     try {
-      const result = await this.searchWithGemini(query, length, imageBase64);
+      const result = await this.searchWithGemini(query, length);
       console.debug(`[CustomSearchTool] 搜索结果:`, result);
+      // 添加发送者信息
+      result.senderInfo = {
+        title: `${sender.card || sender.nickname || sender.user_id}的搜索结果`,
+        sender
+      };
+      
       return result;
     } catch (error) {
       console.error('[CustomSearchTool] 搜索失败:', error);
@@ -59,11 +65,10 @@ export class CustomSearchTool extends AbstractTool {
    * 使用 Gemini API 进行搜索
    * @param {string} query - 搜索内容或关键词
    * @param {number} length - 摘要长度
-   * @param {string|string[]} [imageBase64] - 图片base64数据
    * @returns {Promise<Object>} - 包含答案和来源的对象
    * @private
    */
-  async searchWithGemini(query, length, imageBase64) {
+  async searchWithGemini(query, length) {
     const apiKey = Config.geminiKey;
     const apiBaseUrl = Config.geminiBaseUrl;
     const apiUrl = `${apiBaseUrl}/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
@@ -88,19 +93,6 @@ export class CustomSearchTool extends AbstractTool {
         "googleSearch": {}
       }]
     };
-
-    // 处理图片数据
-    if (imageBase64) {
-      const imageArray = Array.isArray(imageBase64) ? imageBase64 : [imageBase64];
-      imageArray.forEach(image => {
-        requestBody.contents[0].parts.push({
-          "inline_data": {
-            "mime_type": "image/jpeg",
-            "data": image
-          }
-        });
-      });
-    }
 
     try {
       const response = await fetch(apiUrl, {
@@ -180,9 +172,19 @@ export class CustomSearchTool extends AbstractTool {
 
     console.debug('[CustomSearchTool] 处理后的来源信息:', sources);
 
+    // 构建转发消息数组
+    const forwardMsg = [answer];
+    if (sources && sources.length > 0) {
+      forwardMsg.push('\n信息来源：');
+      sources.forEach((source, index) => {
+        forwardMsg.push(`${index + 1}. ${source.title}\n${source.url}`);
+      });
+    }
+
     return {
       answer,
-      sources
+      sources,
+      forwardMsg
     };
   }
 }
