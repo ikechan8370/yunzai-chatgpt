@@ -18,7 +18,7 @@ import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 import {SerpTool} from '../utils/tools/SerpTool.js'
 import { APTool } from '../utils/tools/APTool.js'
-import { ContentSearchTool } from '../utils/tools/ContentSearchTool.js'
+import { CustomSearchTool } from '../utils/tools/CustomSearchTool.js'
 import { UrlExtractionTool } from '../utils/tools/UrlExtractionTool.js'
 
 // 角色映射表
@@ -170,7 +170,7 @@ ${Object.values(faceMap).map(face => `[/${face}]`).join('，')}
         new APTool(),
         new WebsiteTool(),
         new UrlExtractionTool(),
-        new ContentSearchTool(),
+        new CustomSearchTool(),
         new WeatherTool()
       ]
       if (Config.azSerpKey) {
