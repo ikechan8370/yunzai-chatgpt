@@ -19,13 +19,9 @@ export class CustomSearchTool extends AbstractTool {
       length: {
         type: 'integer',
         description: '期望的摘要长度（句子数），默认为3',
-      },
-      sender: {
-        type: 'object',
-        description: '发送者信息',
       }
     },
-    required: ['query', 'sender'],
+    required: ['query'],
   };
 
   description = '使用 Gemini API 进行智能搜索，根据输入的内容或关键词提供全面的搜索结果和摘要。支持自定义摘要长度。';
@@ -35,11 +31,10 @@ export class CustomSearchTool extends AbstractTool {
    * @param {Object} opt - 工具参数
    * @param {string} opt.query - 搜索内容或关键词
    * @param {number} [opt.length=3] - 摘要长度
-   * @param {Object} opt.sender - 发送者信息
    * @returns {Promise<Object>} - 包含答案和来源的对象
    */
   func = async function (opt) {
-    const { query, length = 3, sender } = opt;
+    const { query, length = 3 } = opt;
 
     if (!query?.trim()) {
       throw new Error('搜索内容或关键词不能为空');
@@ -48,12 +43,6 @@ export class CustomSearchTool extends AbstractTool {
     try {
       const result = await this.searchWithGemini(query, length);
       console.debug(`[CustomSearchTool] 搜索结果:`, result);
-      // 添加发送者信息
-      result.senderInfo = {
-        title: `${sender.card || sender.nickname || sender.user_id}的搜索结果`,
-        sender
-      };
-      
       return result;
     } catch (error) {
       console.error('[CustomSearchTool] 搜索失败:', error);
@@ -172,19 +161,9 @@ export class CustomSearchTool extends AbstractTool {
 
     console.debug('[CustomSearchTool] 处理后的来源信息:', sources);
 
-    // 构建转发消息数组
-    const forwardMsg = [answer];
-    if (sources && sources.length > 0) {
-      forwardMsg.push('\n信息来源：');
-      sources.forEach((source, index) => {
-        forwardMsg.push(`${index + 1}. ${source.title}\n${source.url}`);
-      });
-    }
-
     return {
       answer,
-      sources,
-      forwardMsg
+      sources
     };
   }
 }
