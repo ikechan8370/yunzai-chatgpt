@@ -19,7 +19,7 @@ import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 import {SerpTool} from '../utils/tools/SerpTool.js'
 import { APTool } from '../utils/tools/APTool.js'
 import { CustomSearchTool } from '../utils/tools/CustomSearchTool.js'
-import { UrlExtractionTool } from './UrlExtractionTool.js'
+import { UrlExtractionTool } from '../utils/tools/UrlExtractionTool.js'
 
 // 角色映射表
 const roleMap = {
