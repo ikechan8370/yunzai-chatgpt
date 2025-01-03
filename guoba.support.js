@@ -590,11 +590,26 @@ export function supportGuoba () {
           component: 'Divider'
         },
         {
-          field: 'geminiKey',
-          label: 'API密钥',
-          bottomHelpMessage: '前往https://makersuite.google.com/app/apikey获取',
-          component: 'InputPassword'
-        },
+  field: 'geminiKey',
+  label: 'API密钥',
+  bottomHelpMessage: '前往https://makersuite.google.com/app/apikey获取',
+  component: 'GTags',
+  componentProps: {
+    placeholder: '请输入您的 API 密钥',
+    allowAdd: true,
+    allowDel: true,
+    showPrompt: true,
+    promptProps: {
+      content: '请填写您的 API 密钥',
+      placeholder: '请输入 API 密钥',
+      okText: '添加'
+    },
+    valueParser: (value) => {
+      if (!value) return [];
+      return value.split(',').filter(Boolean);
+    },
+  },
+},
         {
           field: 'geminiModel',
           label: '模型',
