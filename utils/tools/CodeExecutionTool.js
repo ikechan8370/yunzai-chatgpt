@@ -159,8 +159,12 @@ export class CodeExecutionTool extends AbstractTool {
     if (description) {
       prompt += `（功能：${description}）`;
     }
-    prompt += `并提供执行结果和分析：\n\`\`\`${language}\n${code}\n\`\`\`\n`;
-    prompt += '请提供：\n1. 代码执行结果\n2. 代码分析和可能的改进建议';
+    prompt += `\n执行代码：\n\`\`\`${language}\n${code}\n\`\`\`\n`;
+    prompt += '请按照以下格式返回结果：\n';
+    prompt += '执行结果(OUTCOME_OK)：\n```\n<执行输出>\n```\n';
+    prompt += '如果执行出错，请使用：\n';
+    prompt += '执行结果(OUTCOME_ERROR)：\n```\n<错误信息>\n```\n';
+    prompt += '如果需要，可以在最后添加代码分析。';
     return prompt;
   }
 
@@ -180,26 +184,33 @@ export class CodeExecutionTool extends AbstractTool {
       .filter(Boolean)
       .join('\n');
 
-    // 解析执行结果和解释
     let output = '';
     let explanation = '';
     let error = null;
 
     try {
-      const parts = response.split(/(?=执行结果：|代码分析：|错误：)/);
-      parts.forEach(part => {
-        const trimmedPart = part.trim();
-        if (trimmedPart.startsWith('执行结果：')) {
-          output = trimmedPart.replace('执行结果：', '').trim();
-        } else if (trimmedPart.startsWith('代码分析：')) {
-          explanation = trimmedPart.replace('代码分析：', '').trim();
-        } else if (trimmedPart.startsWith('错误：')) {
-          error = trimmedPart;
+      // 查找执行结果部分
+      const outcomeMatch = response.match(/执行结果\(OUTCOME_OK\)：\s*```(?:\w*\n)?([\s\S]*?)```/);
+      if (outcomeMatch) {
+        output = outcomeMatch[1].trim();
+      } else {
+        // 检查是否有错误结果
+        const errorMatch = response.match(/执行结果\(OUTCOME_ERROR\)：\s*```(?:\w*\n)?([\s\S]*?)```/);
+        if (errorMatch) {
+          error = errorMatch[1].trim();
+        } else {
+          output = response; // 如果没有匹配到预期格式，返回原始响应
         }
-      });
+      }
+
+      // 提取代码分析部分（如果有）
+      const analysisMatch = response.match(/代码分析：([\s\S]*?)(?=\n\n|$)/);
+      if (analysisMatch) {
+        explanation = analysisMatch[1].trim();
+      }
     } catch (err) {
       console.error('[CodeExecutionTool] 响应解析失败:', err);
-      output = response; // 如果解析失败，返回原始响应
+      output = response; // 解析失败时返回原始响应
     }
 
     return {
