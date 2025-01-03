@@ -5,7 +5,7 @@ import common from '../../../../lib/common/common.js';
 
 /**
  * CodeExecutionTool - Gemini API代码执行工具类
- * 支持多种编程语言的代码执行，并提供详细的执行结果和分析
+ * 支持多种编程语言的代码执行，提供代码生成、执行结果和分析
  * @extends {AbstractTool}
  */
 export class CodeExecutionTool extends AbstractTool {
@@ -32,7 +32,7 @@ export class CodeExecutionTool extends AbstractTool {
   };
 
   // 工具功能描述
-  description = '使用 Gemini API 执行代码，支持多种编程语言，并返回执行结果和相关解释。';
+  description = '使用 Gemini API 执行代码，支持多种编程语言，提供代码生成、执行结果和分析。';
 
   // API请求超时设置（30秒）
   static TIMEOUT = 30000;
@@ -60,14 +60,18 @@ export class CodeExecutionTool extends AbstractTool {
       console.debug(`[CodeExecutionTool] 执行结果:`, result);
       
       // 解构结果对象
-      const { output, executionOutput, explanation, error } = result;
+      const { output, executionOutput, programCode, explanation, error } = result;
       const forwardMsg = [];
       
       // 根据执行结果构建消息
       if (error) {
         forwardMsg.push(`执行出错：\n${error}`);
       } else {
-        // 添加程序实际输出（如果有）
+        // 添加生成的程序代码（如果有）
+        if (programCode) {
+          forwardMsg.push(`生成的程序代码：\n${programCode}`);
+        }
+        // 添加程序输出（如果有）
         if (executionOutput) {
           forwardMsg.push(`程序输出：\n${executionOutput}`);
         }
@@ -178,6 +182,7 @@ export class CodeExecutionTool extends AbstractTool {
     }
     prompt += `\n执行代码：\n\`\`\`${language}\n${code}\n\`\`\`\n`;
     prompt += '请按照以下格式返回结果：\n';
+    prompt += '生成的程序代码：\n```\n<生成或修改后的程序代码>\n```\n';
     prompt += '执行输出：\n```\n<程序实际输出内容>\n```\n';
     prompt += '执行结果(OUTCOME_OK)：\n```\n<执行状态和结果说明>\n```\n';
     prompt += '如果执行出错，请使用：\n';
@@ -189,7 +194,7 @@ export class CodeExecutionTool extends AbstractTool {
   /**
    * 处理Gemini API响应数据
    * @param {Object} data - API响应数据
-   * @returns {Object} 处理后的结果对象，包含输出、执行输出、解释和错误信息
+   * @returns {Object} 处理后的结果对象
    * @private
    */
   processGeminiResponse(data) {
@@ -208,8 +213,15 @@ export class CodeExecutionTool extends AbstractTool {
     let explanation = '';
     let error = null;
     let executionOutput = '';
+    let programCode = '';
 
     try {
+      // 提取程序代码
+      const codeMatch = response.match(/生成的程序代码：\s*```(?:\w*\n)?([\s\S]*?)```/);
+      if (codeMatch) {
+        programCode = codeMatch[1].trim();
+      }
+
       // 提取执行输出
       const outputMatch = response.match(/执行输出：\s*```(?:\w*\n)?([\s\S]*?)```/);
       if (outputMatch) {
@@ -226,7 +238,7 @@ export class CodeExecutionTool extends AbstractTool {
         if (errorMatch) {
           error = errorMatch[1].trim();
         } else {
-          output = response; // 使用原始响应作为输出
+          output = response;
         }
       }
 
@@ -237,16 +249,16 @@ export class CodeExecutionTool extends AbstractTool {
       }
     } catch (err) {
       console.error('[CodeExecutionTool] 响应解析失败:', err);
-      output = response; // 解析失败时返回原始响应
+      output = response;
     }
 
-    // 返回完整的结果对象
+    // 返回处理结果
     return {
       output,           // 执行结果说明
       executionOutput,  // 程序实际输出
+      programCode,      // 生成的程序代码
       explanation,      // 代码分析
-      error,           // 错误信息
-      executionTime: Date.now()  // 执行时间戳
+      error            // 错误信息
     };
   }
 }
