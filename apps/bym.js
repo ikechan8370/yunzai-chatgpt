@@ -20,6 +20,7 @@ import { SerpTool } from '../utils/tools/SerpTool.js'
 import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
 import { GoogleSearchTool } from '../utils/tools/GoogleSearchTool.js'
 import { UrlExtractionTool } from '../utils/tools/UrlExtractionTool.js'
+import { CodeExecutionTool } from '../utils/tools/CodeExecutionTool.js'
 
 export class bym extends plugin {
   constructor () {
@@ -121,6 +122,7 @@ export class bym extends plugin {
         new SendPictureTool(),
         new GoogleSearchTool(),
         new UrlExtractionTool(),
+        new CodeExecutionTool(),
         new WebsiteTool(),
         new WeatherTool(),
         new SendMessageToSpecificGroupOrUserTool()
