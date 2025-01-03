@@ -590,35 +590,25 @@ export function supportGuoba () {
           component: 'Divider'
         },
         {
-    field: 'geminiKey',
-    label: 'API密钥',
-    bottomHelpMessage: '前往https://makersuite.google.com/app/apikey获取',
-    component: 'GTags',
-    componentProps: {
-        placeholder: '点击添加按钮输入 API 密钥',
-        allowAdd: true,
-        allowDel: true,
-        showPrompt: true,
-        promptProps: {
-            content: '添加 Gemini API Key',
-            placeholder: 'AIza...',
-            okText: '确认添加',
-            inputType: 'password'
-        },
-        // 将字符串转换为数组显示
-        valueParser: (value) => {
-            if (!value) return [];
-            return typeof value === 'string' ? value.split(',') : value;
-        },
-        // 将数组转换回逗号分隔的字符串
-        valueFormatter: (value) => {
-            if (!value) return '';
-            return Array.isArray(value) ? value.join(',') : value;
-        },
-        style: {
-            width: '100%'
-        }
-    }
+  field: 'geminiKey',
+  label: 'API密钥',
+  bottomHelpMessage: '前往https://makersuite.google.com/app/apikey获取',
+  component: 'GTags',
+  componentProps: {
+    placeholder: '请输入您的 API 密钥',
+    allowAdd: true,
+    allowDel: true,
+    showPrompt: true,
+    promptProps: {
+      content: '请填写您的 API 密钥',
+      placeholder: '请输入 API 密钥',
+      okText: '添加'
+    },
+    valueParser: (value) => {
+      if (!value) return [];
+      return value.split(',').filter(Boolean);
+    },
+  },
 },
         {
           field: 'geminiModel',
