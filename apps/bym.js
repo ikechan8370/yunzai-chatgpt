@@ -10,7 +10,7 @@ import { SendVideoTool } from '../utils/tools/SendBilibiliTool.js'
 import { SendMusicTool } from '../utils/tools/SendMusicTool.js'
 import { SendPictureTool } from '../utils/tools/SendPictureTool.js'
 import { WebsiteTool } from '../utils/tools/WebsiteTool.js'
-import { convertFaces } from '../utils/face.js'
+import {  convertFaces, faceMap } from '../utils/face.js'
 import { WeatherTool } from '../utils/tools/WeatherTool.js'
 import { EditCardTool } from '../utils/tools/EditCardTool.js'
 import { JinyanTool } from '../utils/tools/JinyanTool.js'
@@ -18,6 +18,8 @@ import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 import { SerpTool } from '../utils/tools/SerpTool.js'
 import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
+import { MultiTool } from '../utils/tools/MultiTool.js'
+import { UrlExtractionTool } from '../utils/tools/UrlExtractionTool.js'
 
 export class bym extends plugin {
   constructor () {
@@ -95,7 +97,7 @@ export class bym extends plugin {
             return `${sender.card || sender.nickname}(${sender.user_id}) ：${chat.raw_message}`
           })
           .join('\n') +
-        `\n你的回复应该尽可能简练，像人类一样随意，不要附加任何奇怪的东西，如聊天记录的格式（比如${Config.assistantLabel}：），禁止重复聊天记录。`
+        `\n你的回复应该尽可能简练，像人类一样随意，但是也要保留“${Config.assistantLabel}”的角色风格，不要附加任何奇怪的东西，不能模仿聊天记录的格式，要以第一人称视角对话，禁止重复聊天记录。`
 
       let client = new CustomGoogleGeminiClient({
         e,
@@ -117,6 +119,8 @@ export class bym extends plugin {
         new SendVideoTool(),
         new SendMusicTool(),
         new SendPictureTool(),
+        new MultiTool(),
+        new UrlExtractionTool(),
         new WebsiteTool(),
         new WeatherTool(),
         new SendMessageToSpecificGroupOrUserTool()
