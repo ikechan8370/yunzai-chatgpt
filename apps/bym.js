@@ -18,7 +18,7 @@ import { KickOutTool } from '../utils/tools/KickOutTool.js'
 import { SetTitleTool } from '../utils/tools/SetTitleTool.js'
 import { SerpTool } from '../utils/tools/SerpTool.js'
 import { SendMessageToSpecificGroupOrUserTool } from '../utils/tools/SendMessageToSpecificGroupOrUserTool.js'
-import { MultiTool } from '../utils/tools/MultiTool.js'
+import { GoogleSearchTool } from '../utils/tools/GoogleSearchTool.js'
 import { UrlExtractionTool } from '../utils/tools/UrlExtractionTool.js'
 
 export class bym extends plugin {
@@ -119,7 +119,7 @@ export class bym extends plugin {
         new SendVideoTool(),
         new SendMusicTool(),
         new SendPictureTool(),
-        new MultiTool(),
+        new GoogleSearchTool(),
         new UrlExtractionTool(),
         new WebsiteTool(),
         new WeatherTool(),
