@@ -54,20 +54,29 @@ export class CodeExecutionTool extends AbstractTool {
       const result = await this.executeCode(code, language, description);
       console.debug(`[CodeExecutionTool] 执行结果:`, result);
       
-      // 构建转发消息
-      const { output, explanation, error } = result;
-      const forwardMsg = [];
+      // 优化消息构建逻辑
+      const messages = [];
       
-      if (error) {
-        forwardMsg.push(`执行出错：\n${error}`);
+      // 添加代码信息
+      messages.push(`执行代码：\n\`\`\`${language}\n${code}\n\`\`\``);
+      
+      // 添加执行结果
+      if (result.error) {
+        messages.push(`执行错误：\n\`\`\`\n${result.error}\n\`\`\``);
       } else {
-        forwardMsg.push(`执行结果：\n${output}`);
-        if (explanation) {
-          forwardMsg.push(`\n代码分析：\n${explanation}`);
-        }
+        messages.push(`执行结果：\n\`\`\`\n${result.output}\n\`\`\``);
       }
       
-      e.reply(await common.makeForwardMsg(e, forwardMsg, `${e.sender.card || e.sender.nickname || e.user_id}的代码执行结果`));
+      // 添加代码分析
+      if (result.explanation) {
+        messages.push(`代码分析：\n${result.explanation}`);
+      }
+      
+      // 添加执行时间
+      messages.push(`执行时间：${new Date(result.executionTime).toLocaleString()}`);
+      
+      // 发送转发消息
+      e.reply(await common.makeForwardMsg(e, messages, `${e.sender.card || e.sender.nickname || e.user_id}的代码执行结果`));
       
       return result;
     } catch (error) {
