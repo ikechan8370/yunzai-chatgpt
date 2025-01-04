@@ -146,7 +146,7 @@ export async function translate (msg, to = 'auto', from = 'auto', ai = Config.tr
       }
       case 'gemini': {
         let client = new CustomGoogleGeminiClient({
-          key: Config.geminiKey,
+          key: Config.getGeminiKey(),
           model: Config.geminiModel,
           baseUrl: Config.geminiBaseUrl,
           debug: Config.debug

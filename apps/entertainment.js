@@ -617,7 +617,7 @@ ${translateLangLabels}
     let client = new CustomGoogleGeminiClient({
       e,
       userId: e.sender.user_id,
-      key: Config.geminiKey,
+      key: Config.getGeminiKey(),
       model: 'gemini-1.5-flash-latest',
       baseUrl: Config.geminiBaseUrl,
       debug: Config.debug

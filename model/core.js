@@ -721,7 +721,7 @@ class Core {
       let client = new CustomGoogleGeminiClient({
         e,
         userId: e.sender.user_id,
-        key: Config.geminiKey,
+        key: Config.getGeminiKey(),
         model: Config.geminiModel,
         baseUrl: Config.geminiBaseUrl,
         debug: Config.debug

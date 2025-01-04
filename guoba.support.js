@@ -592,7 +592,7 @@ export function supportGuoba () {
         {
           field: 'geminiKey',
           label: 'API密钥',
-          bottomHelpMessage: '前往https://makersuite.google.com/app/apikey获取',
+          bottomHelpMessage: '前往https://makersuite.google.com/app/apikey获取，如果有多个Keys，用英文逗号隔开',
           component: 'InputPassword'
         },
         {
