@@ -1,5 +1,5 @@
 import _ from 'lodash';
-//import { segment } from 'oicq';
+// import { segment } from 'oicq'; // 确保如果不再需要 segment，则彻底移除此行
 
 /**
  * 更新说明：
@@ -251,130 +251,146 @@ export const faceMapReverse = _.invert(faceMap);
 // 将“思考”重定向到 212（托腮）
 faceMapReverse['思考'] = '212';
 
-// 将消息中的表情占位符转换为 oicq 的表情代码
+/**
+ * 将消息中的表情占位符转换为 oicq 的表情代码
+ * @param {string} msg - 需要转换的消息字符串。
+ * @param {boolean} [handleAt=false] - 是否处理@成员。
+ * @param {object} [e] - 事件对象，用于获取群聊信息, 包含 isGroup(是否为群消息), bot.gml(获取群成员列表的方法), group_id(群号) 等属性。
+ * @returns {Array<string|object>} - 转换后的消息段数组, 数组成员为字符串或 segment.at / segment.face 对象。
+ */
 export async function convertFaces(msg, handleAt = false, e) {
   // 如果 e?.isGroup 为 true 且 handleAt 为 true，则设置 handleAt 为 true
   handleAt = e?.isGroup && handleAt;
+
   // 群成员列表
   let groupMembers;
-  // 群名片到 QQ 号的映射
-  const groupCardQQMap = new Map(); // 更新：使用 Map 优化查找效率
+  // 群名片到 QQ 号的映射, 使用 Map 优化查找效率
+  const groupCardQQMap = new Map();
+
   // 如果需要处理 @ 消息
   if (handleAt) {
     try {
       // 获取群成员列表
-      groupMembers = e.bot.gml.get(e.group_id); // 更新：修复获取群成员列表的逻辑错误
+      groupMembers = e.bot.gml.get(e.group_id);
     } catch (err) {
-      // 如果获取失败，打印错误信息
+      // 如果获取失败，打印错误信息 (待改进：更完善的错误处理, 例如抛出异常或返回错误信息)
       console.error(`Failed to get group members: ${err}`);
     }
     // 如果成功获取群成员列表
     if (groupMembers) {
-      // 遍历群成员列表
-      for (const [key, userInfo] of groupMembers) { // 更新：使用 for...of 遍历 Map
+      // 使用 for...of 遍历 Map, 直接获取键值对
+      for (const [key, userInfo] of groupMembers) {
         // 将群名片或昵称映射到 QQ 号
         if (userInfo.card) {
-          groupCardQQMap.set(userInfo.card, userInfo.user_id); // 更新：使用 Map.set() 方法
+          // 使用 Map.set() 方法添加键值对
+          groupCardQQMap.set(userInfo.card, userInfo.user_id);
         }
         if (userInfo.nickname) {
-          groupCardQQMap.set(userInfo.nickname, userInfo.user_id); // 更新：使用 Map.set() 方法
+          groupCardQQMap.set(userInfo.nickname, userInfo.user_id);
         }
       }
     }
   }
-  // 临时消息字符串
-  let tmpMsg = '';
-  // 临时表情字符串
-  let tmpFace = '';
-  // 临时 @ 字符串
-  let tmpAt = '';
-  // 是否找到表情
-  let foundFace = false;
-  // 是否找到 @
-  let foundAt = false;
+
+  // 当前的文本消息片段
+  let currentText = '';
+  // 当前的表情字符串
+  let currentFace = '';
+  // 当前的 @ 字符串
+  let currentAt = '';
+  // 是否正在处理表情
+  let isHandlingFace = false;
+  // 是否正在处理 @
+  let isHandlingAt = false;
   // 转换后的消息段数组
-  const msgs = [];
+  const resultMsg = [];
+
   // 遍历消息字符串
   for (let i = 0; i < msg.length; i++) {
-    // 如果找到 '['
+    // 如果当前字符是 '['，表示开始处理表情
     if (msg[i] === '[') {
-      // 设置 foundFace 为 true
-      foundFace = true;
+      isHandlingFace = true;
       continue;
     }
-    // 如果没有找到表情
-    if (!foundFace) {
-      // 如果需要处理 @ 消息且找到 '@'
+
+    // 如果当前不在处理表情
+    if (!isHandlingFace) {
+      // 如果需要处理 @ 消息且当前字符是 '@'
       if (handleAt && msg[i] === '@') {
-        // 设置 foundAt 为 true
-        foundAt = true;
-        // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
-        if (tmpMsg) {
-          msgs.push(tmpMsg);
-          tmpMsg = '';
+        // 开始处理 @
+        isHandlingAt = true;
+        // 如果 currentText 不为空，将其添加到 resultMsg 数组中
+        if (currentText) {
+          resultMsg.push(currentText);
+          currentText = '';
         }
         continue;
       }
-      // 如果需要处理 @ 消息且 foundAt 为 true
-      if (handleAt && foundAt) {
-        // 将当前字符添加到 tmpAt 中
-        tmpAt += msg[i];
-        // 如果在 groupCardQQMap 中找到 tmpAt
-        if (groupCardQQMap.has(tmpAt)) { // 更新：使用 Map.has() 方法
-          // 设置 foundAt 为 false
-          foundAt = false;
-          // 将 @ 消息段添加到 msgs 数组中
-          msgs.push(segment.at(groupCardQQMap.get(tmpAt))); // 更新：at 信息不再需要群名片参数
-          // 清空 tmpAt
-          tmpAt = '';
+
+      // 如果正在处理 @
+      if (handleAt && isHandlingAt) {
+        // 将当前字符添加到 currentAt 中
+        currentAt += msg[i];
+        // 使用 Map.has() 检查 groupCardQQMap 中是否存在 currentAt
+        if (groupCardQQMap.has(currentAt)) {
+          // 停止处理 @
+          isHandlingAt = false;
+          // 使用 Map.get() 获取对应的 QQ 号，并构造 segment.at 对象添加到 resultMsg 数组中
+          resultMsg.push(segment.at(groupCardQQMap.get(currentAt))); // 假设 segment.at 只接受 QQ 号作为参数
+          // 清空 currentAt
+          currentAt = '';
           continue;
         }
       } else {
-        // 将当前字符添加到 tmpMsg 中
-        tmpMsg += msg[i];
+        // 将当前字符添加到 currentText 中
+        currentText += msg[i];
       }
-    } else {
-      // 如果当前字符不是 ']'
+    } else { // 如果正在处理表情
+      // 如果当前字符不是 ']'，表示表情内容还未结束
       if (msg[i] !== ']') {
-        // 将当前字符添加到 tmpFace 中
-        tmpFace += msg[i];
+        // 将当前字符添加到 currentFace 中
+        currentFace += msg[i];
       } else {
-        // 设置 foundFace 为 false
-        foundFace = false;
+        // 停止处理表情
+        isHandlingFace = false;
         // 从 faceMapReverse 中查找表情 ID
-        const faceId = faceMapReverse[tmpFace] || faceMapReverse['/' + tmpFace] || faceMapReverse[_.trimStart(tmpFace, '/')]; // 更新：简化表情查找逻辑
+        const faceId = faceMapReverse[currentFace] || faceMapReverse['/' + currentFace] || faceMapReverse[_.trimStart(currentFace, '/')];
         // 如果找到表情 ID
         if (faceId) {
-          // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
-          if (tmpMsg) {
-            msgs.push(tmpMsg);
-            tmpMsg = '';
+          // 如果 currentText 不为空，将其添加到 resultMsg 数组中
+          if (currentText) {
+            resultMsg.push(currentText);
+            currentText = '';
           }
-          // 添加表情消息段到 msgs 数组中
-          msgs.push(segment.face(parseInt(faceId)));
-          // 清空 tmpMsg
-          tmpMsg = '';
+          // 构造 segment.face 对象并添加到 resultMsg 数组中
+          resultMsg.push(segment.face(parseInt(faceId)));
+          // 清空 currentText
+          currentText = '';
         } else {
-          // 将 '[' 和 tmpFace 拼接到 tmpMsg 中
-          tmpMsg += `[${tmpFace}]`;
+          // 如果未找到表情 ID，则将 '[' 和 currentFace 拼接到 currentText 中，作为普通文本处理
+          currentText += `[${currentFace}]`;
         }
-        // 清空 tmpFace
-        tmpFace = '';
+        // 清空 currentFace
+        currentFace = '';
       }
     }
   }
-  // 如果 tmpMsg 不为空，将其添加到 msgs 数组中
-  if (tmpMsg) {
-    msgs.push(tmpMsg);
+
+  // 循环结束后，处理可能剩余的 currentText、currentFace 和 currentAt
+
+  // 如果 currentText 不为空，将其添加到 resultMsg 数组中
+  if (currentText) {
+    resultMsg.push(currentText);
   }
-  // 如果 tmpFace 不为空，将其添加到 msgs 数组中
-  if (tmpFace) {
-    msgs.push(`[${tmpFace}`);
+  // 如果 currentFace 不为空，将其添加到 resultMsg 数组中，作为普通文本处理
+  if (currentFace) {
+    resultMsg.push(`[${currentFace}`);
   }
-  // 如果需要处理 @ 消息且 tmpAt 不为空，将其添加到 msgs 数组中
-  if (handleAt && tmpAt) {
-    msgs.push(`@${tmpAt}`);
+  // 如果需要处理 @ 消息且 currentAt 不为空，将其添加到 resultMsg 数组中，作为普通文本处理
+  if (handleAt && currentAt) {
+    resultMsg.push(`@${currentAt}`);
   }
+
   // 返回转换后的消息段数组
-  return msgs;
+  return resultMsg;
 }
