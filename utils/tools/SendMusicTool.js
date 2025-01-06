@@ -27,7 +27,22 @@ export class SendMusicTool extends AbstractTool {
 
     try {
       let group = await e.bot.pickGroup(target)
-      await group.shareMusic('163', id)
+      
+      // 检查是否支持 shareMusic 方法
+      if (typeof group.shareMusic === 'function') {
+        await group.shareMusic('163', id)
+      } else {
+        // 构建音乐分享消息
+        const musicMsg = {
+          type: 'music',
+          data: {
+            type: '163',
+            id: id,
+            jumpUrl: `https://music.163.com/#/song?id=${id}`
+          }
+        }
+        await e.reply(musicMsg)
+      }
       return `the music has been shared to ${target}`
     } catch (e) {
       return `music share failed: ${e}`
