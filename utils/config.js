@@ -199,6 +199,7 @@ const defaultConfig = {
   enableBYM: false,
   // 触发对话的概率，百分比。比如5%就写5
   bymRate: 5,
+  bymDisableGroup: [],
   // 伪人模式触发骂人反击的关键词
   bymFuckList: [
     '骂',

@@ -28,6 +28,12 @@ export class bym extends plugin {
     if (!Config.enableBYM) {
       return false
     }
+
+    // 伪人禁用群
+    if (Config.bymDisableGroup?.includes(e.group_id?.toString())) {
+      return false
+    }
+
     let sender = e.sender.user_id
     let card = e.sender.card || e.sender.nickname
     let group = e.group_id
