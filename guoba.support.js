@@ -946,7 +946,7 @@ export function supportGuoba () {
         },
         {
           field: 'bymRate',
-          label: '伪人模式触发概率，单位为%',
+          label: '伪人模式触发默认概率，单位为%',
           component: 'InputNumber',
           componentProps: {
             min: 0,
@@ -985,11 +985,91 @@ export function supportGuoba () {
           component: 'Input'
         },
         {
+          field: 'AutoToDownImg',
+          label: '伪人模式的表情包',
+          bottomHelpMessage: '伪人模式的表情包，主动收藏发送，注意将下载到本地',
+          component: 'Switch'
+        },
+        {
           field: 'bymFuckPrompt',
           label: '伪人模式骂人反击的设定词',
           component: 'Input'
         },
         {
+          field: 'returnQQ',
+          label: '伪人模式黑名单彻底黑名单',
+          bottomHelpMessage: '若是匹配仁qq，直接连聊天记录都过滤掉',
+          component: 'InputTextArea'
+        },
+        {
+          field: "GroupList",
+          label: "群聊设置",
+          bottomHelpMessage: "单独设置群聊触发",
+          component: "GSubForm",
+          componentProps: {
+            multiple: true,
+            schemas: [
+              {
+                field: "id",
+                label: "QQ群",
+                component: "Input",
+                required: true,
+              },
+              {
+                field: "propNum",
+                label: "触发概率",
+                component: "Input",
+                required: true,
+              },
+              {
+                field: "chatslist",
+                label: "群聊聊天记录长度",
+                component: "Input",
+                required: true,
+              },
+              {
+                field: "maxtext",
+                label: "用户最大长度限制",
+                component: "Input",
+                required: true,
+              }
+            ],
+          },
+        },
+        {
+          field: "UserList",
+          label: "个人设置",
+          bottomHelpMessage: "单独设置个人条件",
+          component: "GSubForm",
+          componentProps: {
+            multiple: true,
+            schemas: [
+              {
+                field: "id",
+                label: "QQ号",
+                component: "Input",
+                required: true,
+              },
+              {
+                field: "propNum",
+                label: "触发概率",
+                component: "Input",
+                required: true,
+              },
+              {
+                field: "notofgroup",
+                label: "是否不与群聊概率相关",
+                component: "Switch",
+                required: true,
+              },
+              {
+                field: "maxtext",
+                label: "用户最大长度限制",
+                component: "Input",
+                required: true,
+              }
+            ],
+          },
           field: 'bymFuckList',
           label: '伪人模式反击的触发词',
           bottomHelpMessage: '请输入用于伪人模式下骂人反击的触发词，每个词组将被单独处理',

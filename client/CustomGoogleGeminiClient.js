@@ -83,7 +83,7 @@ export const HarmBlockThreshold = {
  */
 
 export class CustomGoogleGeminiClient extends GoogleGeminiClient {
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.model = props.model
     this.baseUrl = props.baseUrl || BASEURL
@@ -101,7 +101,8 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
    *     onProgress: function?,
    *     functionResponse?: FunctionResponse | FunctionResponse[],
    *     system: string?,
-   *     image: string?,
+   *     image: string?,        // 保留旧版单图片支持
+   *     images: string[],      // 新增多图片支持
    *     maxOutputTokens: number?,
    *     temperature: number?,
    *     topP: number?,
@@ -157,18 +158,33 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
           parentMessageId: opt.parentMessageId || undefined
         }
       : {
-          role: 'user',
-          parts: text ? [{ text }] : [],
-          id: idThis,
-          parentMessageId: opt.parentMessageId || undefined
+        role: 'user',
+        parts: text ? [{ text }] : [],
+        id: idThis,
+        parentMessageId: opt.parentMessageId || undefined
+      }
+    if (opt.image || opt.images) {
+      // 兼容旧版单图片
+      if (opt.image) {
+        thisMessage.parts.push({
+          inline_data: {
+            mime_type: 'image/jpeg',
+            data: opt.image
+          }
+        })
+      }
+      // 处理多图片
+      if (opt.images && Array.isArray(opt.images)) {
+        for (let imageData of opt.images) {
+          thisMessage.parts.push({
+            inline_data: {
+              mime_type: 'image/jpeg',
+              data: imageData
+            }
+          })
+
         }
-    if (opt.image) {
-      thisMessage.parts.push({
-        inline_data: {
-          mime_type: 'image/jpeg',
-          data: opt.image
-        }
-      })
+      }
     }
     history.push(_.cloneDeep(thisMessage))
     let url = `${this.baseUrl}/v1beta/models/${this.model}:generateContent`
@@ -244,7 +260,7 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
     if (opt.codeExecution) {
       body.tools.push({ code_execution: {} })
     }
-    if (opt.image) {
+    if (opt.image || (opt.images && opt.images.length > 0)) {
       delete body.tools
     }
     body.contents.forEach(content => {
@@ -388,7 +404,7 @@ export class CustomGoogleGeminiClient extends GoogleGeminiClient {
  * @param {Content} responseContent
  * @returns {{final: string, responseContent}}
  */
-function handleSearchResponse (responseContent) {
+function handleSearchResponse(responseContent) {
   let final = ''
 
   // 遍历每个 part 并处理

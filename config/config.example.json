@@ -107,5 +107,23 @@
   "azSerpKey": "",
   "serpSource": "ikechan8370",
   "extraUrl": "https://cpe.ikechan8370.com",
-  "smartMode": false
+  "smartMode": false,
+  "GroupList": [
+    {
+      "id": "114514",
+      "propNum": 10,
+      "chatslist": 40,
+      "maxtext": 60
+    }
+  ],
+  "UserList": [
+    {
+      "id": "114514",
+      "propNum": 1,
+      "notofgroup": false,
+      "maxtext": 500
+    }
+  ],
+  "returnQQ":[],
+  "AutoToDownImg": false
 }
